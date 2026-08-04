@@ -1,4 +1,0 @@
-interface:
-  display_name: "AI伴侣时间锚"
-  short_description: "给本地 AI 伴侣补充当前时间与调用间隔的超轻时间感。"
-  default_prompt: "使用 $time-anchor 感知本轮本地时间与上次调用间隔。"

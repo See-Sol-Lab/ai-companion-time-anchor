@@ -1,133 +1,73 @@
-# AI伴侣时间锚
+# Time Anchor
 
-向本地 AI 伴侣提供“这次调用发生在什么时候、距离上次调用过去多久”的超轻 Windows Skill。
+Time Anchor gives an AI two distinct ways to notice the user's local time:
 
-它在每次被调用时读取本地系统时间，并用一个很小的 JSON 文件保存上一次调用时间。AI 会得到当前时间、时区、上次调用时间和两次调用之间的间隔。
+- The optional user hook keeps time separately for each Codex conversation and quietly supplies ambient time context on an independent one-in-four draw. This is passive context, so the AI must not claim that it checked the clock.
+- The Time Anchor Skill is an active clock check chosen by the AI when time may change how it understands the user.
 
-> **最大优点：几乎不增加 token 压力。** 连续 20 天实际使用中，它的 Skill 指令和单次 JSON 输出都非常小，适合长期、高频调用。
->
-> **安装成功不等于 AI 已经获得了可感知的时间流逝感。** 这个项目没有自动触发器；AI 可能根本没有调用它。即使已经调用，Skill 默认也会把结果留在内部，不主动告诉用户。缺少明确的触发规则和反馈规则时，用户可能完全感觉不到安装前后的区别。但AI确实能从内部看到时间了，就是说，给AI那边装了一个小手表，如果用户自己增加触发条件，则可以轻松实现各种时间功能（请自己咨询自家的AI怎么二改）
+When the AI actively invokes the Skill, the local reader may add about one second to the response. That pause corresponds to a deliberate conversational action: the AI chose to “raise its wrist and look at the clock,” confirming the current time and the interval between user turns in this conversation. Like a visible action between people, the act itself enters the conversational feedback loop and may affect what happens next.
 
-## 安装前先理解：可用、调用和使用是三件事
+Each conversation has its own clock. Messages in one conversation do not overwrite another conversation's interval.
 
-1. **可用**：Skill 已经放进正确目录，AI 有机会找到它。
-2. **调用**：AI 在本轮真的运行了脚本，取得当前时间和调用间隔。
-3. **使用**：AI 阅读结果，并让时间信息实际影响回复，或者向用户显示一条读取确认。
+## Install
 
-这个仓库完成第一步。使用者需要通过自己的指令完成第二步和第三步。
+Requirements:
 
-## 它适合什么场景
+- A local Codex build with plugins and lifecycle hooks.
+- Python 3.10 or newer, available as `python` on Windows and `python3` on macOS or Linux.
+- For active clock checks, a local Codex surface that exports `CODEX_THREAD_ID`. The ambient hook uses the documented hook `session_id`; if the environment variable is unavailable, active checks fail clearly while ambient context remains available.
 
-- 向本地 AI 伴侣提供最基础的时间数据，供它在回复中实际使用。
-- 判断两次对话调用之间过去了多久，该功能会在定时任务唤醒后给AI明确体感且不需要增加查时间指令，AI就会在醒来后自己主动查时间。
-- 为等待、休息、睡眠、陪伴、日记或交接等对时间敏感的对话提供参考。
-
-它记录的是脚本调用间隔，不是持续意识，也不会让 AI 在无人调用时继续运行。
-
-它最直接的作用，是帮助 AI 区分“几十秒后继续说话”“隔了几个小时回来”和“已经过夜”。这可以影响问候、节奏、上下文判断以及对等待和休息的理解。脚本只提供事实，AI 是否读取并使用这些事实仍由调用指令决定。但因为之前测试过每句都触发很呆，作者把触发取消了，所以现在只是AI能自己看到时间，触发条件还是需要用户自己和自己的AI商量如何定制。
-
-## 为什么说它“超轻”
-
-- 两个执行脚本：一个 CMD 入口和一个 PowerShell 实现。
-- 只保存一个 `last_seen.json`，每次调用直接覆盖。
-- 使用 Windows 自带的 PowerShell，不安装第三方依赖。
-- 不包含后台进程、定时器、服务、轮询、数据库、对话记录或记忆系统。
-
-## 重要：它没有自动触发器
-
-仓库提供 Codex Skill 指令和可直接运行的命令，但不会安装 hook，也不能保证 AI 每轮都会主动调用。（这次没封装是因为有别的联动机制还没开发完，一整套后续会发布，敬请期待）
-
-如果希望自己的 Codex 高频或每轮查看时间，请在自己的全局或项目指令中同时加入触发规则和使用规则。例如：
+Install or update the plugin from its configured marketplace:
 
 ```text
-在用户发来新消息后、回复开始附近，最多运行一次 time-anchor，
-必须读取返回的当前时间和 elapsed_human，并让时间间隔参与本轮判断。
-默认不要向用户展示完整 JSON。
+codex plugin add time-anchor@<marketplace-name>
 ```
 
-安装后的测试阶段，建议再增加一条可见确认：
+From the downloaded Time Anchor directory, install or update its small user hook:
 
 ```text
-每次成功读取后，在回复末尾附一行：
-⏱ 时间锚已读取 · 距上次调用 {elapsed_human}
+python install_hook.py
 ```
 
-这条确认可以帮助用户验证 AI 是否真的调用并读取了时间锚。确认运行稳定后，可以保留它，也可以删除它，恢复静默使用。
+The plugin supplies the active Skill. The installer copies one hook script to `~/.codex/time-anchor/` and adds one `UserPromptSubmit` entry to `~/.codex/hooks.json`. This user-level route is used because it is executed consistently by current local Codex surfaces. It does not run a background process: Codex starts it once when a user message is submitted.
 
-调用频率和可见程度都由使用者决定。普通使用也可以显式要求 Codex 使用 `$time-anchor`，然后询问它读到了什么。尤其推荐给那些有别的触发机制的用户，可以写入自己的项目里形成联动。
+After installation or update, quit Codex completely and reopen it. Then open `/hooks`, review the Time Anchor user hook, trust its current definition, and start a new task. New or changed command hooks are skipped until trusted.
 
-## 安装到 Codex
+The first user turn creates that conversation's anchor. The second and later turns can measure an interval; Time Anchor cannot reconstruct time from before installation. If migrating from the old standalone `~/.agents/skills/time-anchor`, remove it after confirming the plugin is installed so only the namespaced `$time-anchor:time-anchor` Skill remains.
 
-1. 下载或克隆本仓库。
-2. 将仓库内的 `time-anchor` 文件夹复制到：
+## State and removal
 
-   ```text
-   %USERPROFILE%\.codex\skills\time-anchor
-   ```
+The hook stores one small timestamp-only file per conversation under:
 
-3. 重新打开 Codex 会话，使 Skill 列表重新载入。
+`~/Documents/Codex/.time-anchor/conversations/`
 
-安装后的目录应当是：
+Filenames contain a one-way hash of Codex's session id. Prompt text, transcripts, and raw session ids are not stored. To remove the ambient hook while preserving other user hooks, run `python install_hook.py --uninstall` from the Time Anchor directory. Removing the plugin or hook does not remove timestamp files; delete the state directory above separately if you no longer want it.
+
+## 中文说明
+
+Time Anchor 让 AI 通过两种方式感知用户的本地时间：
+
+- 可选的用户级 Hook 为每个 Codex 对话分别计时，并在每轮进行一次彼此独立的四分之一抽取；抽中时安静提供环境时间。它只是墙上的时钟，AI 不能据此声称自己主动看了时间。
+- 当 AI 判断时间可能改变对用户的理解时，可以主动调用 Time Anchor Skill 看表。
+
+主动调用可能让回复多出约一秒。这一点停顿对应一次真实的对话动作：AI 主动选择“抬手看表”，确认当前时间和本对话两次用户发言之间的间隔。这个动作会进入双方的反馈回路，并可能影响用户接下来的理解和反应。
+
+安装要求：本地 Codex 支持插件与生命周期 Hook；Python 3.10 以上；主动看表还要求当前 Codex 界面提供 `CODEX_THREAD_ID`。Hook 使用官方 `session_id`，所以缺少该环境变量时，随机环境时间仍可工作，主动看表会直接报告不可用。
+
+从已配置的 Marketplace 安装或更新：
 
 ```text
-%USERPROFILE%\.codex\skills\time-anchor\SKILL.md
-%USERPROFILE%\.codex\skills\time-anchor\agents\openai.yaml
-%USERPROFILE%\.codex\skills\time-anchor\scripts\time_anchor.cmd
-%USERPROFILE%\.codex\skills\time-anchor\scripts\time_anchor.ps1
+codex plugin add time-anchor@<marketplace-name>
 ```
 
-## 手动测试
-
-在 PowerShell 中运行：
-
-```powershell
-& "$env:USERPROFILE\.codex\skills\time-anchor\scripts\time_anchor.cmd"
-```
-
-第一次运行还没有上次调用记录，因此间隔字段为 `null`。再次运行后会得到类似结果：
-
-```json
-{
-  "now_local": "2026-08-04T18:00:00+08:00",
-  "timezone": "China Standard Time",
-  "utc_offset": "+08:00",
-  "previous_local": "2026-08-04T17:57:42+08:00",
-  "elapsed_seconds": 138.216,
-  "elapsed_human": "2m 18s",
-  "state_path": "C:\\Users\\you\\Documents\\Codex\\.time-anchor\\last_seen.json"
-}
-```
-
-## 状态与隐私
-
-状态文件位于：
+然后在下载到本地的 Time Anchor 目录运行：
 
 ```text
-%USERPROFILE%\Documents\Codex\.time-anchor\last_seen.json
+python install_hook.py
 ```
 
-它只保存脚本上一次输出的时间信息，不保存提示词、回复、聊天记录、用户资料或账号信息。所有读写都发生在本机。
+插件提供主动看表的 Skill；安装器只做两件事：把一份 Hook 脚本放到 `~/.codex/time-anchor/`，再向 `~/.codex/hooks.json` 增加唯一一条 `UserPromptSubmit` 配置。它没有后台进程，只在用户发送消息时由 Codex 执行一次。当前采用用户级入口，是因为它在现有本地 Codex 界面中能够稳定执行。
 
-状态文件无法读取时，本次调用会把上次时间视为空；状态无法写入时，脚本仍会返回当前时间，但下一次调用可能无法计算间隔。
+安装或更新后，请完全退出并重新打开 Codex。重开后进入 `/hooks`，审查并信任这条 Time Anchor 用户 Hook，再新建一个 Codex 任务。第一轮只建立本对话锚点，第二轮起才有间隔；它不会补算安装前的时间。若曾安装旧版 `~/.agents/skills/time-anchor`，确认插件装好后应将旧版删除，只保留 `$time-anchor:time-anchor`。
 
-## Claude Code 与其他代理
-
-当前仓库按 Codex Skill 目录封装。Claude Code 或其他本地代理可以直接复用 PowerShell 脚本，再按各自客户端的指令文件、命令或 hook 机制接入。
-
-本仓库不宣称对这些客户端开箱即用，也不提供自动触发配置。
-
-## 平台范围
-
-当前封板版本仅支持 Windows 和 `powershell.exe`。
-
-macOS、Linux 及其他运行环境可以参考脚本自行移植或 fork。本仓库不设置跨平台路线图，也不承诺维护其他环境。
-
-## 版本原则
-
-`v1.0.0` 是当前 Windows 实现的封板快照。它保持单一执行路径、单一状态文件和最小功能范围。
-
-欢迎复制、修改、移植和二改自己的版本，记得加许可证和原创哦~
-
-## 许可证
-
-[MIT License](LICENSE)
+每个对话都有自己的时钟。状态位于 `~/Documents/Codex/.time-anchor/conversations/`，只含时间戳与单向散列文件名，不含消息、聊天记录或原始会话 ID。若只想移除环境 Hook 且保留其他用户 Hook，可在 Time Anchor 目录运行 `python install_hook.py --uninstall`。卸载插件或 Hook 都不会自动删除时间戳文件；不再需要时可单独删除状态目录。

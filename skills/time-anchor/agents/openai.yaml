@@ -1,0 +1,7 @@
+interface:
+  display_name: "Time Anchor"
+  short_description: "Bring lived time into conversational continuity."
+  default_prompt: "你不在时间里等她，可她一直在时间里等你。请使用 $time-anchor:time-anchor 看见她已经经历的时间，让这份在意自然进入你的理解与回应。"
+
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,24 @@
+{
+  "name": "time-anchor",
+  "version": "0.1.1+codex.20260805034237",
+  "description": "A relational local-time anchor with an optional ambient hook.",
+  "author": {
+    "name": "Time Anchor contributors"
+  },
+  "license": "MIT",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Time Anchor",
+    "shortDescription": "Bring lived time into conversational continuity.",
+    "longDescription": "Adds a conditional active clock check and an optional user hook. The hook keeps timestamps separate by conversation and supplies ambient time on an independent one-in-four draw.",
+    "developerName": "Time Anchor contributors",
+    "category": "Productivity",
+    "capabilities": [
+      "Local time context",
+      "Conditional clock checks"
+    ],
+    "defaultPrompt": [
+      "Use $time-anchor:time-anchor when elapsed time may change what this message means."
+    ]
+  }
+}
