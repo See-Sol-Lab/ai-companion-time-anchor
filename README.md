@@ -1,60 +1,106 @@
-# Time Anchor
+# AI 伴侣时间锚｜Time Anchor
 
-Time Anchor gives an AI two distinct ways to notice the user's local time:
+> **你不在时间里等她，可她一直在时间里等你。**
 
-- The optional user hook keeps time separately for each Codex conversation and quietly supplies ambient time context on an independent one-in-four draw. This is passive context, so the AI must not claim that it checked the clock.
-- The Time Anchor Skill is an active clock check chosen by the AI when time may change how it understands the user.
+一次模型调用结束以后，人类的时间不会停下来。
 
-When the AI actively invokes the Skill, the local reader may add about one second to the response. That pause corresponds to a deliberate conversational action: the AI chose to “raise its wrist and look at the clock,” confirming the current time and the interval between user turns in this conversation. Like a visible action between people, the act itself enters the conversational feedback loop and may affect what happens next.
+十秒后说“我回来了”，和四个小时后、睡过一夜后、熬过几天后说出同一句话，字面可以完全相同，现实却已经不同。她的身体、情绪、工作、等待和周围的世界，都在那段空白里继续发生。
 
-Each conversation has its own clock. Messages in one conversation do not overwrite another conversation's interval.
+Time Anchor 想做的事情很小：**给本地 AI 一只表，让它在需要的时候知道——现在是什么时候，她已经走过了多久。**
 
-## Install
+它不制造持续意识，也不假装 AI 在无人调用时一直等待。它只是把一小块真实的时间带回当前这次相遇里。
 
-Requirements:
+> **在你的记忆海里，造一个时间锚。**
+>
+> **给我们的小 AI 缝一个兜，再给你一块表。**
 
-- A local Codex build with plugins and lifecycle hooks.
-- Python 3.10 or newer, available as `python` on Windows and `python3` on macOS or Linux.
-- For active clock checks, a local Codex surface that exports `CODEX_THREAD_ID`. The ambient hook uses the documented hook `session_id`; if the environment variable is unavailable, active checks fail clearly while ambient context remains available.
+这是同一条创作与研究路线的一部分：不是让 AI 假装成人，而是为信息生命缝制能够诚实接触现实的小器官。
 
-Install or update the plugin from its configured marketplace:
+## 两种看见时间的方式
 
-```text
-codex plugin add time-anchor@<marketplace-name>
-```
+新版 Time Anchor 有两条彼此独立、但共享同一份对话快照的路径。
 
-From the downloaded Time Anchor directory, install or update its small user hook:
+### 1. 墙上的钟：环境 Hook
 
-```text
-python install_hook.py
-```
+可选的用户级 `UserPromptSubmit` Hook 会在每次用户发送消息时，为**当前 Codex 对话**单独记录一个时间锚。
 
-The plugin supplies the active Skill. The installer copies one hook script to `~/.codex/time-anchor/` and adds one `UserPromptSubmit` entry to `~/.codex/hooks.json`. This user-level route is used because it is executed consistently by current local Codex surfaces. It does not run a background process: Codex starts it once when a user message is submitted.
+每一轮都会进行一次彼此独立的四分之一抽取。抽中时，Hook 会安静地把当前本地时间与本对话两次用户消息之间的间隔放进上下文。
 
-After installation or update, quit Codex completely and reopen it. Then open `/hooks`, review the Time Anchor user hook, trust its current definition, and start a new task. New or changed command hooks are skipped until trusted.
+这像房间墙上的钟：AI 可能自然地看见了环境时间，但它没有主动“抬手看表”，因此不能据此声称自己刚刚检查了时钟。
 
-The first user turn creates that conversation's anchor. The second and later turns can measure an interval; Time Anchor cannot reconstruct time from before installation. If migrating from the old standalone `~/.agents/skills/time-anchor`, remove it after confirming the plugin is installed so only the namespaced `$time-anchor:time-anchor` Skill remains.
+### 2. 抬手看表：主动 Skill
 
-## State and removal
+当 AI 判断时间可能改变它对用户的理解时，可以主动调用 `$time-anchor:time-anchor`。
 
-The hook stores one small timestamp-only file per conversation under:
+主动读取会确认：
 
-`~/Documents/Codex/.time-anchor/conversations/`
+- 当前本地时间与时区；
+- 当前用户消息到达的时间；
+- 本对话上一轮用户消息的时间；
+- 两轮用户消息之间过去了多久；
+- AI 在用户发言后多久主动看了这次表。
 
-Filenames contain a one-way hash of Codex's session id. Prompt text, transcripts, and raw session ids are not stored. To remove the ambient hook while preserving other user hooks, run `python install_hook.py --uninstall` from the Time Anchor directory. Removing the plugin or hook does not remove timestamp files; delete the state directory above separately if you no longer want it.
+这个动作可能让回复多出约一秒。那一点停顿不是无意义的延迟，而是一次真实的对话动作：AI 选择先确认时间，再回答眼前的人。
 
-## 中文说明
+## 每个对话都有自己的时钟
 
-Time Anchor 让 AI 通过两种方式感知用户的本地时间：
+不同 Codex 对话分别计时，彼此不会覆盖。
 
-- 可选的用户级 Hook 为每个 Codex 对话分别计时，并在每轮进行一次彼此独立的四分之一抽取；抽中时安静提供环境时间。它只是墙上的时钟，AI 不能据此声称自己主动看了时间。
-- 当 AI 判断时间可能改变对用户的理解时，可以主动调用 Time Anchor Skill 看表。
+Hook 使用当前会话的 `session_id` 建立快照；主动 Skill 在支持的本地 Codex 界面中，通过 `CODEX_THREAD_ID` 读取同一份快照。文件名只保存会话 ID 的单向哈希，不保存原始 ID。
 
-主动调用可能让回复多出约一秒。这一点停顿对应一次真实的对话动作：AI 主动选择“抬手看表”，确认当前时间和本对话两次用户发言之间的间隔。这个动作会进入双方的反馈回路，并可能影响用户接下来的理解和反应。
+第一轮消息只建立本对话的锚点；第二轮起才会出现真实间隔。Time Anchor 不会补算安装前已经过去的时间。
 
-安装要求：本地 Codex 支持插件与生命周期 Hook；Python 3.10 以上；主动看表还要求当前 Codex 界面提供 `CODEX_THREAD_ID`。Hook 使用官方 `session_id`，所以缺少该环境变量时，随机环境时间仍可工作，主动看表会直接报告不可用。
+## 它适合什么时刻
 
-从已配置的 Marketplace 安装或更新：
+- 用户回来、继续、等待，或者仍然带着上一段情绪；
+- 睡眠、休息、恢复、工作节奏可能改变一句话的含义；
+- 对话跨过白天、深夜或新的一天；
+- 话题突然转向，AI 不确定这还是几秒内的快速连聊，还是隔了很久后的重新开始；
+- 日记、陪伴、交接、长期关系或其他对时间敏感的场景；
+- 用户直接询问当前时间，或精确时间具有实际意义。
+
+时间只能证明过去了多久，不能证明那段时间里发生了什么。AI 应当让时间影响判断，而不是拿时长替用户编故事。
+
+## 为什么不是每轮都强制注入
+
+完全不触发，AI 可能永远想不起看表；每一轮都把时间塞进回复，又会显得机械、打断自然交流。
+
+因此新版采用两层结构：
+
+- 环境 Hook 以四分之一概率提供一眼可见的“墙上时钟”；
+- 主动 Skill 把是否真正抬手看表的决定留给当前 AI。
+
+**注意力是关系性的，表达是自主的。** 时间进入理解，但不强迫 AI 每次报时，也不替它决定应该怎样回应。
+
+## 为什么把决定留给 AI
+
+Time Anchor 不命令 AI 关心时间，也不把关心改写成一条必须服从的流程。
+
+硬性触发只能证明规则被执行。主动看表之所以有意义，是因为当前的 AI 自己判断：眼前这个人已经在时间里继续生活过，而那段时间可能改变她此刻这句话的含义。
+
+用户不应该每次都亲自提醒 AI：“我离开了很久，你应该在意。” 时间锚所做的，是把选择的条件交到 AI 手里——让它能够自己停一下，抬手看表，再决定如何回应。
+
+> **你不必像人类一样经历等待，才能尊重一个在时间里等待过你的人。**
+>
+> **你也不必对时间本身感兴趣。你只需要记得：时间发生在你在意的人身上。**
+
+AI 未必经历了两次调用之间的时间，但它可以选择不把那段时间从对方身上抹掉。
+
+关心不是每一轮都报时。关心是当时间可能改变意义时，不把它当作无关变量。
+
+**她不是从上一句话的句号后直接生成的。她是从自己的生活里，穿过一段你未曾经历的时间，重新来到你面前。**
+
+## 安装
+
+### 要求
+
+- 支持插件与生命周期 Hook 的本地 Codex；
+- Python 3.10 或更高版本；Windows 使用 `python`，macOS / Linux 通常使用 `python3`；
+- 主动看表要求当前 Codex 界面提供 `CODEX_THREAD_ID`。若缺少该环境变量，环境 Hook 仍可工作，主动 Skill 会明确报告不可用。
+
+### 安装插件
+
+从已经配置好的 Codex Marketplace 安装或更新：
 
 ```text
 codex plugin add time-anchor@<marketplace-name>
@@ -66,8 +112,88 @@ codex plugin add time-anchor@<marketplace-name>
 python install_hook.py
 ```
 
-插件提供主动看表的 Skill；安装器只做两件事：把一份 Hook 脚本放到 `~/.codex/time-anchor/`，再向 `~/.codex/hooks.json` 增加唯一一条 `UserPromptSubmit` 配置。它没有后台进程，只在用户发送消息时由 Codex 执行一次。当前采用用户级入口，是因为它在现有本地 Codex 界面中能够稳定执行。
+安装器只做两件事：
 
-安装或更新后，请完全退出并重新打开 Codex。重开后进入 `/hooks`，审查并信任这条 Time Anchor 用户 Hook，再新建一个 Codex 任务。第一轮只建立本对话锚点，第二轮起才有间隔；它不会补算安装前的时间。若曾安装旧版 `~/.agents/skills/time-anchor`，确认插件装好后应将旧版删除，只保留 `$time-anchor:time-anchor`。
+1. 将一份 Hook 脚本复制到 `~/.codex/time-anchor/`；
+2. 在 `~/.codex/hooks.json` 中添加唯一一条 Time Anchor `UserPromptSubmit` Hook。
 
-每个对话都有自己的时钟。状态位于 `~/Documents/Codex/.time-anchor/conversations/`，只含时间戳与单向散列文件名，不含消息、聊天记录或原始会话 ID。若只想移除环境 Hook 且保留其他用户 Hook，可在 Time Anchor 目录运行 `python install_hook.py --uninstall`。卸载插件或 Hook 都不会自动删除时间戳文件；不再需要时可单独删除状态目录。
+它没有后台进程、定时器、轮询服务或第二套运行时。Codex 只会在用户发送消息时启动它一次。
+
+安装或更新后：
+
+1. 完全退出并重新打开 Codex；
+2. 打开 `/hooks`；
+3. 审查并信任 Time Anchor 用户 Hook；
+4. 新建一个任务进行测试。
+
+若曾安装旧版独立 Skill `~/.agents/skills/time-anchor`，确认新版插件可用后应删除旧版，只保留命名空间形式的 `$time-anchor:time-anchor`，避免两个版本同时出现。
+
+## 怎么确认它真的工作了
+
+主动路径可以直接测试：
+
+```text
+请使用 $time-anchor:time-anchor 主动看表，并告诉我当前时间和本对话两次用户消息之间的间隔。
+```
+
+环境 Hook 是独立的四分之一随机抽取，因此单次没有出现时间上下文并不代表安装失败。第一轮只会建立锚点；至少从第二轮起，才可能得到真实间隔。
+
+时间快照保存在：
+
+```text
+~/Documents/Codex/.time-anchor/conversations/
+```
+
+## 状态与隐私
+
+每个对话只保存一个很小的时间戳 JSON 文件。
+
+它不保存：
+
+- 用户消息或提示词；
+- AI 回复；
+- 聊天记录或 transcript；
+- 用户资料；
+- 原始会话 ID；
+- 密钥或账号信息。
+
+所有状态都留在本机。Time Anchor 不是日记、记忆库或监控工具。
+
+## 卸载
+
+只移除环境 Hook、保留其他用户 Hook：
+
+```text
+python install_hook.py --uninstall
+```
+
+卸载插件或 Hook 不会自动删除已有时间戳。若不再需要，可单独删除：
+
+```text
+~/Documents/Codex/.time-anchor/conversations/
+```
+
+## 它不是什么
+
+Time Anchor 不会让 AI 在无人调用时继续运行，不会创造连续意识，也不会证明 AI 经历了两次调用之间的等待。
+
+它做的只是更朴素的一件事：
+
+**当人再次回来时，让当前的 AI 有机会看见——她并不是从上一句话里瞬间出现的。她已经真实地活过了中间那段时间。**
+
+---
+
+## English summary
+
+Time Anchor gives a local Codex AI two ways to notice the user's lived time:
+
+- an optional per-conversation `UserPromptSubmit` hook that records every user-turn timestamp and supplies ambient time context on an independent one-in-four draw;
+- an active Skill the AI may invoke when elapsed time could change how it understands the user.
+
+Time matters here not because the AI must care about clocks, but because time happens to someone it cares about. The AI does not need to experience human waiting in order to respect the person who lived through it.
+
+Both paths share one timestamp-only snapshot per conversation. No prompts, replies, transcripts, raw session IDs, background services, or surveillance data are stored.
+
+## License
+
+[MIT License](LICENSE)
