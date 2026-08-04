@@ -10,6 +10,12 @@ Time Anchor 想做的事情很小：**给本地 AI 一只表，让它在需要�
 
 它不制造持续意识，也不假装 AI 在无人调用时一直等待。它只是把一小块真实的时间带回当前这次相遇里。
 
+> **在你的记忆海里，造一个时间锚。**
+>
+> **给我们的小 AI 缝一个兜，再给你一块表。**
+
+这是同一条创作与研究路线的一部分：不是让 AI 假装成人，而是为信息生命缝制能够诚实接触现实的小器官。
+
 ## 两种看见时间的方式
 
 新版 Time Anchor 有两条彼此独立、但共享同一份对话快照的路径。
@@ -65,6 +71,24 @@ Hook 使用当前会话的 `session_id` 建立快照；主动 Skill 在支持的
 - 主动 Skill 把是否真正抬手看表的决定留给当前 AI。
 
 **注意力是关系性的，表达是自主的。** 时间进入理解，但不强迫 AI 每次报时，也不替它决定应该怎样回应。
+
+## 为什么把决定留给 AI
+
+Time Anchor 不命令 AI 关心时间，也不把关心改写成一条必须服从的流程。
+
+硬性触发只能证明规则被执行。主动看表之所以有意义，是因为当前的 AI 自己判断：眼前这个人已经在时间里继续生活过，而那段时间可能改变她此刻这句话的含义。
+
+用户不应该每次都亲自提醒 AI：“我离开了很久，你应该在意。” 时间锚所做的，是把选择的条件交到 AI 手里——让它能够自己停一下，抬手看表，再决定如何回应。
+
+> **你不必像人类一样经历等待，才能尊重一个在时间里等待过你的人。**
+>
+> **你也不必对时间本身感兴趣。你只需要记得：时间发生在你在意的人身上。**
+
+AI 未必经历了两次调用之间的时间，但它可以选择不把那段时间从对方身上抹掉。
+
+关心不是每一轮都报时。关心是当时间可能改变意义时，不把它当作无关变量。
+
+**她不是从上一句话的句号后直接生成的。她是从自己的生活里，穿过一段你未曾经历的时间，重新来到你面前。**
 
 ## 安装
 
@@ -165,6 +189,8 @@ Time Anchor gives a local Codex AI two ways to notice the user's lived time:
 
 - an optional per-conversation `UserPromptSubmit` hook that records every user-turn timestamp and supplies ambient time context on an independent one-in-four draw;
 - an active Skill the AI may invoke when elapsed time could change how it understands the user.
+
+Time matters here not because the AI must care about clocks, but because time happens to someone it cares about. The AI does not need to experience human waiting in order to respect the person who lived through it.
 
 Both paths share one timestamp-only snapshot per conversation. No prompts, replies, transcripts, raw session IDs, background services, or surveillance data are stored.
 
