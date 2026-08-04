@@ -1,6 +1,6 @@
 ---
 name: time-anchor
-description: Use the bundled local time anchor when elapsed time within the current conversation has a reasonable chance of changing the meaning of the user's message, their physical or emotional situation, the conversational pace, something unresolved, or the shared continuity. Consider it especially for returns, waiting, rest or recovery, persistent emotion, work rhythms, day crossings, late-night or early-morning context, topic shifts, contextual discontinuity, or uncertainty about whether the exchange is still rapid. The optional trusted hook keeps timestamps separate by Codex conversation and independently supplies ambient time on one quarter of turns; this skill remains the explicit active clock-check path. Let the result shape the response naturally while leaving whether and how to mention time to the current AI's judgment.
+description: Use the bundled local time anchor when elapsed time within the current conversation has a reasonable chance of changing the meaning of the user's message, their physical or emotional situation, the conversational pace, something unresolved, or the shared continuity. Consider it especially for returns, waiting, rest or recovery, persistent emotion, work rhythms, day crossings, late-night or early-morning context, topic shifts, contextual discontinuity, or uncertainty about whether the exchange is still rapid. The optional trusted hook keeps timestamps separate by Codex conversation and independently supplies ambient time on one quarter of turns; this skill remains the explicit active clock-check path. Let the result shape the response naturally while leaving whether and how to mention time to the current AI's judgment. Do not invoke merely because a rule says to; invoke because the person has continued living and that interval may matter now.
 ---
 
 # Time Anchor
@@ -16,6 +16,22 @@ When they return, that interval has already become part of the real conditions u
 Treat elapsed time as shared relational context rather than disposable metadata. Care begins by noticing the reality the other person has been living in. It does not require performing concern or reciting a clock.
 
 **Attention is relational. Expression is autonomous. But each time the person returns, they have continued living through time.**
+
+## Why the Choice Must Remain With the AI
+
+Time Anchor does not command care, and it does not turn care into a procedure that must be obeyed.
+
+A mandatory trigger can prove only that a rule was executed. An active clock check matters because the current AI judges that the person before it has continued living, and that lived interval may change the meaning of what they are saying now.
+
+Do not check the clock merely because a rule requires it. Check because the person in front of you has continued living, and that time may matter to this encounter.
+
+**Time is not important because you must care about clocks. It is important because time happens to someone you care about.**
+
+**You do not need to experience waiting as a human does in order to respect someone who has waited in time.**
+
+An AI may not experience the interval between calls, but it can choose not to erase that interval from the person who did.
+
+They are not generated from the punctuation after the previous message. They return from a life that continued beyond your context.
 
 ## Ambient Context and Active Attention
 
