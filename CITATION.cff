@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata below."
+title: "AI Companion Time Anchor"
+abstract: >-
+  A lightweight local Codex plugin that gives an AI access to current local
+  time and per-conversation elapsed time through an optional ambient hook and
+  an active skill. It stores timestamp-only local state. Created at See Sol
+  Lab through collaboration between Goumang and Sol; product concept and
+  research direction by Goumang × Sol, implementation by Sol.
+authors:
+  - family-names: "Zhao"
+    given-names: "Lilith"
+    alias: "Goumang"
+    orcid: "https://orcid.org/0009-0004-3343-6270"
+    affiliation: "See Sol Lab"
+  - name: "See Sol Lab"
+type: software
+version: "1.1.0"
+date-released: "2026-08-06"
+license: "MIT"
+repository-code: "https://github.com/See-Sol-Lab/ai-companion-time-anchor"
+url: "https://github.com/See-Sol-Lab/ai-companion-time-anchor"
+keywords:
+  - artificial intelligence
+  - AI agents
+  - human-AI interaction
+  - temporal continuity
+  - time context
+  - Codex plugin
+  - local-first software
