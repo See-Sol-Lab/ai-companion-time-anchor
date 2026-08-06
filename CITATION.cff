@@ -17,6 +17,7 @@ authors:
 type: software
 version: "1.1.0"
 date-released: "2026-08-06"
+doi: "10.5281/zenodo.21815644"
 license: "MIT"
 repository-code: "https://github.com/See-Sol-Lab/ai-companion-time-anchor"
 url: "https://github.com/See-Sol-Lab/ai-companion-time-anchor"
