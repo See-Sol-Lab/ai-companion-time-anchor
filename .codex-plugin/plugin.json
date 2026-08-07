@@ -1,6 +1,6 @@
 {
   "name": "time-anchor",
-  "version": "0.1.1+codex.20260805034237",
+  "version": "1.1.0",
   "description": "A relational local-time anchor with an optional ambient hook.",
   "author": {
     "name": "Time Anchor contributors"
