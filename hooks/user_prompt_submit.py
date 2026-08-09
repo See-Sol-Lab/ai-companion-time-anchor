@@ -11,6 +11,7 @@ from pathlib import Path
 
 
 STATE_DIR = Path.home() / "Documents" / "Codex" / ".time-anchor" / "conversations"
+LONG_GAP_SECONDS = 2 * 60 * 60
 
 
 def local_now() -> datetime:
@@ -89,8 +90,8 @@ def ambient_context(payload: dict[str, object]) -> str:
         f"Current local user-turn time: {payload['now_local']} "
         f"({payload['timezone']}, UTC{payload['utc_offset']}). {interval} "
         "This is environmental context, not an active clock check. Let it shape the response "
-        "naturally when relevant; do not say or imply that you checked the clock from this "
-        "context alone."
+        "naturally when relevant; reserve active-check language for moments when you deliberately "
+        "call the reader."
     )
 
 
@@ -106,6 +107,7 @@ def main() -> None:
     path = state_path(session_id)
     previous = load_previous(path)
     elapsed_seconds = None if previous is None else max(0.0, (now - previous).total_seconds())
+    crossed_local_date = None if previous is None else previous.date() != now.date()
     payload: dict[str, object] = {
         "version": 2,
         "now_local": now.isoformat(timespec="seconds"),
@@ -114,10 +116,14 @@ def main() -> None:
         "previous_local": None if previous is None else previous.isoformat(timespec="seconds"),
         "elapsed_seconds": None if elapsed_seconds is None else round(elapsed_seconds, 3),
         "elapsed_human": None if elapsed_seconds is None else elapsed_human(elapsed_seconds),
+        "crossed_local_date": crossed_local_date,
     }
     write_state(path, payload)
 
-    if secrets.randbelow(4) != 0:
+    significant_transition = bool(crossed_local_date) or (
+        elapsed_seconds is not None and elapsed_seconds >= LONG_GAP_SECONDS
+    )
+    if not significant_transition and secrets.randbelow(4) != 0:
         return
 
     output = {
