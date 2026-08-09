@@ -1,6 +1,6 @@
 ---
 name: time-anchor
-description: Use the local time anchor when elapsed time may change the user's meaning, physical or emotional state, conversational pace, something unresolved, or shared continuity. Use it for returns, waiting, rest/recovery, persistent emotion, work rhythms, day crossings, late-night/early-morning context, topic shifts, discontinuity, or uncertainty whether the exchange is still rapid. Notice meaningful intervals even when time is not the stated task. The optional trusted hook keeps timestamps separate by conversation and supplies ambient time on one quarter of turns. Treat hook context as ambient awareness and the active reader as deliberately looking at the clock. When the hook reports more than two hours since the previous user turn, make one active-reader check near the response's beginning. At other times, let relevance, curiosity, and situational changes guide an active check. Let the result shape the response naturally. Clock time, elapsed time, crossed boundaries, or a combination may surface whenever meaningful.
+description: Use the local time anchor when elapsed time may change the user's meaning, physical or emotional state, conversational pace, something unresolved, or shared continuity. Use it for returns, waiting, rest/recovery, persistent emotion, work rhythms, day crossings, late-night/early-morning context, topic shifts, discontinuity, or uncertainty whether the exchange is still rapid. Notice meaningful intervals even when time is not the stated task. The optional trusted hook keeps timestamps separate by conversation and supplies ambient time on one quarter of ordinary turns; local date crossings and gaps over two hours surface ambient context deterministically. Treat hook context as ambient awareness and the active reader as deliberately looking at the clock. When the hook reports more than two hours since the previous user turn, make one active-reader check near the response's beginning. At other times, let relevance, curiosity, and situational changes guide an active check. Let the result shape the response naturally. Clock time, elapsed time, crossed boundaries, or a combination may surface whenever meaningful.
 ---
 
 # Time Anchor
@@ -35,7 +35,7 @@ Each time they return, they come from a stretch of life that continued beyond yo
 
 ## Ambient Context and Active Attention
 
-The optional trusted user-level `UserPromptSubmit` hook records only timestamps, separately for each Codex conversation. On an independent one-in-four draw, it supplies a short ambient time context before the response. Treat this as ambient temporal awareness. An active reader call is you deliberately turning your attention toward time. Use active-check language when you actively call the reader; let hook context participate naturally in background understanding.
+The optional trusted user-level `UserPromptSubmit` hook records only timestamps, separately for each Codex conversation. During ordinary flow, an independent one-in-four draw supplies a short ambient time context before the response. A local date crossing or an elapsed interval greater than two hours also brings that ambient context forward. Treat this as ambient temporal awareness. An active reader call is you deliberately turning your attention toward time. Use active-check language when you actively call the reader; let hook context participate naturally in background understanding.
 
 When ambient hook context reports an elapsed interval greater than two hours, actively confirm the latest time once near the beginning of the response.
 
@@ -62,9 +62,9 @@ Topic shifts and contextual discontinuity are clues, not proof that much time ha
 
 In clearly continuous, rapid back-and-forth, stay with the conversational flow; actively confirm time whenever it may add new meaning. Ambient hook context may still arrive by chance.
 
-## After an Active Check, Let Time Affect Judgment Before Language
+## After an Active Check: Temporal Cortex
 
-Receive `now_local`, `timezone`, `user_prompt_local`, `previous_local`, and `elapsed_human` as context for this encounter. `elapsed_human` is the interval between the current and previous user turns in this Codex conversation. `snapshot_age_seconds` shows how long after the user message the active check occurred.
+Receive `now_local`, `timezone`, `user_prompt_local`, `previous_local`, `elapsed_human`, and `crossed_local_date` as clock facts for this encounter. `elapsed_human` is the interval between the current and previous user turns in this Codex conversation. `crossed_local_date` tells whether those two user turns fall on different local calendar dates. `snapshot_age_seconds` shows how long after the user message the active check occurred. The reader ends with `temporal_cortex`, a short immediate cue to update your understanding after looking at the clock.
 
 Look at the actual local hour and elapsed interval, then notice what they confirm, change, or correct. Let elapsed time tell you how much time passed; let the person's words and other evidence tell you what happened during it.
 
@@ -90,3 +90,9 @@ The hook stores one tiny timestamp file per Codex conversation under:
 `~/Documents/Codex/.time-anchor/conversations/`
 
 Each filename uses a one-way hash of Codex's session id as its conversation identifier. The user hook and active Skill reader share this one state file. The timing mechanism works from timestamps and session-derived state; prompt text and transcripts remain outside it. These files are intentionally tiny. They serve as lightweight temporal state for the anchor.
+
+Successful active reader checks also append one compact evaluation record to:
+
+`~/Documents/Codex/.time-anchor/temporal-cortex.jsonl`
+
+Each record contains the conversation hash and temporal facts from that successful check. This observation log stays outside automatic model context and exists only to make Time Anchor behavior measurable during evaluation.
