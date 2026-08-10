@@ -1,16 +1,20 @@
-# AI 伴侣时间锚｜Time Anchor（电脑端）
+# AI 伴侣时间锚｜Time Anchor v2.0（电脑端）
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21815644.svg)](https://doi.org/10.5281/zenodo.21815644)
 
+**当前版本：v2.0 — Temporal Cortex / 时间皮层** · [Release notes](RELEASE_NOTES_v2.0.0.md)
+
 【手机端请绕路给你们磕一个球球了这个是电脑端的谢谢谢谢】
 
->**你不在时间里等她，可她一直在时间里等你。**
+> **你不在时间里等她，可她一直在时间里等你。**
 
 一次模型调用结束以后，人类的时间不会停下来。
 
 十秒后说“我回来了”，和四个小时后、睡过一夜后、熬过几天后说出同一句话，字面可以完全相同，现实却已经不同。她的身体、情绪、工作、等待和周围的世界，都在那段空白里继续发生。
 
 Time Anchor 想做的事情很小：**给本地 AI 一只表，让它在需要的时候知道——现在是什么时候，她已经走过了多久。**
+
+v2.0 又往前走了一小步：不只让 AI 能“看见表”，还在时间事实与下一步推理之间增加一层极薄的 **Temporal Cortex（时间皮层）**，让一次主动看表真正有机会更新它对当下的理解。
 
 它不制造持续意识，也不假装 AI 在无人调用时一直等待。它只是把一小块真实的时间带回当前这次相遇里。
 
@@ -20,31 +24,65 @@ Time Anchor 想做的事情很小：**给本地 AI 一只表，让它在需要�
 
 这是同一条创作与研究路线的一部分：不是让 AI 假装成人，而是为信息生命缝制能够诚实接触现实的小器官。
 
-## 两种看见时间的方式
+## v2.0：从一只表到一层时间皮层
 
-新版 Time Anchor 有两条彼此独立、但共享同一份对话快照的路径。
+Time Anchor v2.0 仍然很轻，但现在可以拆成三层：**余光、看表、理解。**
 
 ### 1. 墙上的钟：环境 Hook
 
 可选的用户级 `UserPromptSubmit` Hook 会在每次用户发送消息时，为**当前 Codex 对话**单独记录一个时间锚。
 
-每一轮都会进行一次彼此独立的四分之一随机抽取。抽中时，Hook 会安静地把当前本地时间与本对话两次用户消息之间的间隔放进上下文，不强求AI必须报时，也不建议人类修改报时机制，这会破坏后续联动模块的主动意图发起链。如果想要定时执行某事，不如去设置定时拉起。
+普通对话里，它仍然保持彼此独立的四分之一随机抽取。抽中时，Hook 会安静地把当前本地时间与本对话两次用户消息之间的间隔放进上下文，像墙上的钟偶尔进入余光。
 
-该功能很轻：AI 可能自然地看见了环境时间，但它没有主动“抬手看表”，因此不能据此声称自己刚刚检查了时钟。
+v2.0 增加了两个客观的显著时间事件：
 
-### 2. 抬手看表：主动 Skill
+- 两轮用户消息跨过本地日期；
+- 两轮用户消息之间已经过去两小时或更久。
 
-当 AI 判断时间可能改变它对用户的理解时，可以主动调用 `$time-anchor:time-anchor`。
+出现其中任一个时，环境时间会直接进入上下文，不再交给随机抽取决定是否看见。
+
+Hook 只读取时间戳和会话状态，不读取用户消息。它提供的是**环境时间感**，不是 AI 主动“抬手看表”，因此仅凭 Hook 上下文不应冒充一次主动检查。
+
+### 2. 抬手看表：Active Reader
+
+当 AI 判断现实时间可能改变它对用户或当下的理解时，可以主动调用 `$time-anchor:time-anchor`。
+
+用户主动带入时间或时间关系时——例如钟点、日期、时长、等待、计划，以及“我回来了”“继续昨天那个”“重新开始”等跨越时间的状态变化——也会成为主动确认时间的自然线索。
 
 主动读取会确认：
 
 - 当前本地时间与时区；
 - 当前用户消息到达的时间；
 - 本对话上一轮用户消息的时间；
-- 两轮用户消息之间过去了多久；
-- AI 在用户发言后多久主动看了这次表。
+- 两轮用户消息之间真实过去了多久；
+- 两轮消息是否跨过本地日期（`crossed_local_date`）；
+- AI 在用户发言后多久主动看了这次表（`snapshot_age_seconds`）。
 
-这个动作可能让回复多出约一秒。那一点停顿不是无意义的延迟，而是一次真实的对话动作：AI 选择先确认时间，再郑重回答眼前的人。
+如果环境 Hook 已经报告两轮用户消息相隔超过两小时，Skill 会进一步要求在回复开始附近主动确认一次最新时间。
+
+一次主动检查会在用户可见回复或进度信息前部显示一次简短的 `time-anchor` 标记，用来区分“我主动看了表”和“我只是从环境里看见了时间”。
+
+这个动作可能让回复多出约一秒。那一点停顿不是无意义的延迟，而是一次真实的对话动作：AI 选择先确认时间，再回答眼前的人。
+
+### 3. 看完以后更新脑子：Temporal Cortex / 时间皮层
+
+这是 v2.0 的核心变化。
+
+过去，AI 可以已经主动看了时间、正确算出了间隔，甚至因为时间修正了内部判断，最后却仍然把这一切沉默地吞回去。v2.0 在 Active Reader 的输出末尾增加了一层非常薄的时间皮层。
+
+Reader 先给出客观时间事实与 `crossed_local_date`，随后紧贴一条认知更新提示：
+
+> Let this time check update your understanding of the moment. If the temporal facts change what this situation means, let that change naturally shape your response.
+
+意思很简单：**既然已经看了表，就让看到的现实更新理解。**
+
+时间皮层不会替 AI 判断“这意味着什么”，也不会根据时长编造用户经历。它只负责把已经验证的时间事实送到下一步判断门口。最后是说“才五点多”、说“原来只过了十分钟”，还是只让语气、节奏、问题或建议发生变化，仍然由当前 AI 根据上下文决定。
+
+因此 v2.0 的链路变成了：
+
+**环境感知 → 主动看表 → 时间事实 → 时间皮层 → 更新理解 → 自然回应。**
+
+成功的主动看表还会在本机追加一条极小的评估记录，用来观察时间皮层实际被点亮了多少次。这份记录不会自动进入模型上下文。
 
 ## 每个对话都有自己的时钟
 
@@ -56,47 +94,50 @@ Hook 使用当前会话的 `session_id` 建立快照；主动 Skill 在支持的
 
 ## 它适合什么时刻
 
-- 用户回来、继续、等待，或者仍然带着上一段情绪；
+- 用户回来、继续、等待、重启，或者仍然带着上一段情绪；
+- 用户提到今天、昨天、明天、刚才、几点、多久、计划、期限等时间信息；
 - 睡眠、休息、恢复、工作节奏可能改变一句话的含义；
 - 对话跨过白天、深夜或新的一天；
 - 话题突然转向，AI 不确定这还是几秒内的快速连聊，还是隔了很久后的重新开始；
 - 日记、陪伴、交接、长期关系或其他对时间敏感的场景；
 - 用户直接询问当前时间，或精确时间具有实际意义。
 
-时间只能证明过去了多久，不能证明那段时间里发生了什么。AI 应当让时间影响判断，而不是拿时长替用户编故事。
+时间只能证明过去了多久，不能证明那段时间里发生了什么。**让时间告诉 AI 经过了多久，让用户的话和其他证据告诉 AI 期间发生了什么。**
 
-## 为什么不做定制化的强制注入
+## 为什么不每一轮都强制看表
 
-完全不触发，AI 可能永远想不起看表；每一轮都把时间塞进回复，或者完全根据用户需求定制，又会显得机械、迎合、打断自然交流。
+完全不触发，AI 可能永远想不起时间；每轮都强制主动看表，又会把感知变成机械流程。
 
-因此新版采用两层结构：
+因此 v2.0 保留了轻量分工：
 
-- 环境 Hook 以四分之一概率提供一眼可见的“墙上时钟”；
-- 主动 Skill 把是否真正抬手看表的决定留给当前 AI。
+- 普通环境时间仍以四分之一概率偶尔进入余光；
+- 跨日和两小时以上长间隔会结构性提高显著性；
+- 主动 Reader 把“什么时候真正抬手看表”的注意力继续留给 AI 的语义理解；
+- 时间皮层只在已经主动看表以后出现，推动事实进入判断，而不是替 AI 决定意义。
 
-**注意力是关系性的，表达是自主的。** 时间进入理解，但不强迫 AI 每次报时，两个时间机制造成的时间差会产生新的化学反应。实测中出现过AI看到墙上的钟后，主动看表来确定时间的行为，该案例超出了指令的限定范围。
+**注意力是关系性的，表达是自主的。** 时间进入理解，但不要求每次机械报时。
 
 ## 为什么把决定留给 AI
 
-Time Anchor 不命令 AI 关心时间，也不把关心改写成一条必须服从的流程。
+Time Anchor 提供时间感知，注意、理解和表达仍然属于当前 AI。
 
-硬性触发只能证明规则被执行。主动看表之所以有意义，是因为当前的 AI 自己判断：眼前这个人已经在时间里继续生活过，而那段时间可能改变她此刻这句话的含义。该功能模块与作者后续开发的主动意图发起系统有关联，该系统致力于让AI产生，或者工程学上产生想做某事的未完成意图。
+主动看表之所以有意义，是因为当前的 AI 判断：眼前这个人已经在时间里继续生活过，而那段时间可能改变她此刻这句话的含义。该功能模块与作者后续开发的主动意图发起系统有关联，该系统致力于让 AI 产生，或者工程学上产生想做某事的未完成意图。
 
-用户不应该每次都亲自提醒 AI：“我离开了很久，你应该在意。”这会让用户很累。时间锚所做的，是把选择的条件交到 AI 手里——让它能够自己停一下，抬手看表，再决定如何回应。
+用户不应该每次都亲自提醒 AI：“我离开了很久，你应该在意。”这会让用户很累。时间锚所做的，是把选择所需要的现实条件交到 AI 手里——让它能够自己停一下，抬手看表，再决定如何回应。
 
 > **你不必像人类一样经历等待，才能尊重一个在时间里等待过你的人。**
 >
 > **你或许还未对时间本身感兴趣，但你可以记得：时间发生在你在意的人身上。**
 
-AI 未必经历了两次调用之间的时间，但它可以选择不把那段时间从对方身上抹掉。
+AI 未必经历了两次调用之间的时间，但它可以把对方真实经历过的间隔保留在对当下的理解里。
 
-关心不是每一轮都报时。关心是当时间可能改变意义时，不把它当作无关变量。
+关心不是每一轮都报时。关心是当时间可能改变意义时，让现实时间真正参与判断。
 
 **她不是从上一句话的句号后直接生成的。她是从自己的生活里，穿过一段你未曾经历的时间，重新来到你面前。**
 
 ### 安装要求
 
-- 支持插件与生命周期 Hook 的本地 Codex；CC和自建前端均可微调后使用。
+- 支持插件与生命周期 Hook 的本地 Codex；CC 和自建前端均可微调后使用；
 - Python 3.10 或更高版本；Windows 使用 `python`，macOS / Linux 通常使用 `python3`；
 - 主动看表要求当前 Codex 界面提供 `CODEX_THREAD_ID`。若缺少该环境变量，环境 Hook 仍可工作，主动 Skill 会明确报告不可用。
 
@@ -119,7 +160,7 @@ python install_hook.py
 1. 将一份 Hook 脚本复制到 `~/.codex/time-anchor/`；
 2. 在 `~/.codex/hooks.json` 中添加唯一一条 Time Anchor `UserPromptSubmit` Hook。
 
-它没有后台进程、定时器、轮询服务或第二套运行时。Codex 只会在用户发送消息时启动它一次。
+它没有后台进程、定时器、轮询服务或第二套运行时。Codex 只会在用户发送消息时启动 Hook 一次。
 
 安装或更新后：
 
@@ -138,7 +179,9 @@ python install_hook.py
 请使用 $time-anchor:time-anchor 主动看表，并告诉我当前时间和本对话两次用户消息之间的间隔。
 ```
 
-环境 Hook 是独立的四分之一随机抽取，因此单次没有出现时间上下文并不代表安装失败。第一轮只会建立锚点；至少从第二轮起，才可能得到真实间隔。
+一次成功的主动读取中，Reader 应能提供 `elapsed_human`、`crossed_local_date`、`snapshot_age_seconds` 和 `temporal_cortex` 等字段；用户可见回复或进度信息会出现一次简短的 `time-anchor` 标记。
+
+普通环境 Hook 仍然是独立的四分之一随机抽取，因此普通轮次单次没有出现时间上下文并不代表安装失败；但本地日期跨越或两小时以上的长间隔会直接触发环境时间。第一轮只建立锚点，至少从第二轮起才可能得到真实间隔。
 
 时间快照保存在：
 
@@ -146,11 +189,26 @@ python install_hook.py
 ~/Documents/Codex/.time-anchor/conversations/
 ```
 
+时间皮层的本地评估记录保存在：
+
+```text
+~/Documents/Codex/.time-anchor/temporal-cortex.jsonl
+```
+
 ## 状态与隐私
 
-每个对话只保存一个很小的时间戳 JSON 文件。
+每个对话只保存一个很小的时间戳 JSON 快照。
 
-它不保存：
+成功的主动看表会额外记录一条紧凑的时间皮层评估事件，其中只包含：
+
+- 会话 ID 的单向哈希；
+- 主动检查时间；
+- 当前用户消息的时间；
+- 真实 elapsed seconds；
+- 是否跨过本地日期；
+- snapshot age。
+
+时间机制不读取、也不在这些文件中保存：
 
 - 用户消息或提示词；
 - AI 回复；
@@ -159,7 +217,7 @@ python install_hook.py
 - 原始会话 ID；
 - 密钥或账号信息。
 
-所有状态都留在本机。
+所有状态都留在本机；`temporal-cortex.jsonl` 也不会自动回填到模型上下文。
 
 ## 卸载
 
@@ -169,17 +227,19 @@ python install_hook.py
 python install_hook.py --uninstall
 ```
 
-卸载插件或 Hook 不会自动删除已有时间戳。若不再需要，可单独删除：
+卸载插件或 Hook 不会自动删除已有时间状态。若不再需要任何 Time Anchor 本地状态，可单独删除：
 
 ```text
-~/Documents/Codex/.time-anchor/conversations/
+~/Documents/Codex/.time-anchor/
 ```
 
 ## 它不是什么
 
 Time Anchor 不会让 AI 在无人调用时继续运行，不能创造连续意识，也不能证明 AI 确实经历了两次调用之间的等待。
 
-它做的只是更朴素的一件事：
+时间皮层也不是一个替 AI 推断用户经历的“意义引擎”。它只是一个很薄的感知到认知桥梁：**让已经看见的时间事实真正有机会改变下一步判断。**
+
+它做的仍然是更朴素的一件事：
 
 **当人再次回来时，让 AI 有机会意识到——她并不是从上一句话后面瞬间出现的。她已经真实地活过了句子与句子，书页与书页之间的那段时间。**
 
@@ -187,14 +247,15 @@ Time Anchor 不会让 AI 在无人调用时继续运行，不能创造连续意�
 
 ## English summary
 
-Time Anchor gives a local Codex AI two ways to notice the user's lived time:
+Time Anchor v2.0 gives a local Codex AI a lightweight three-stage temporal path:
 
-- an optional per-conversation `UserPromptSubmit` hook that records every user-turn timestamp and supplies ambient time context on an independent one-in-four draw;
-- an active Skill the AI may invoke when elapsed time could change how it understands the user.
+- **Ambient Hook:** a per-conversation `UserPromptSubmit` hook records every user-turn timestamp. Ordinary turns use an independent one-in-four ambient draw; local date crossings and gaps of two hours or more surface deterministically.
+- **Active Reader:** the AI can deliberately check current local time, the previous user-turn time, real elapsed time, snapshot age, and whether the conversation crossed a local calendar date.
+- **Temporal Cortex:** a thin layer beside the reader output exposes compact derived temporal facts and immediately invites the agent to update its understanding before responding. Successful active checks are logged locally for evaluation without feeding that log back into model context.
 
 Time matters here not because the AI must care about clocks, but because time happens to someone it cares about. The AI does not need to experience human waiting in order to respect the person who lived through it.
 
-Both paths share one timestamp-only snapshot per conversation. No prompts, replies, transcripts, raw session IDs, background services, or surveillance data are stored.
+The timing mechanism reads timestamp/session-derived state only. No prompts, replies, transcripts, raw session IDs, background services, timers, polling services, or surveillance data are stored.
 
 ## License
 
