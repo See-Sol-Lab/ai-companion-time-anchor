@@ -1,7 +1,7 @@
 {
   "name": "time-anchor",
-  "version": "1.1.0",
-  "description": "A relational local-time anchor with an optional ambient hook.",
+  "version": "2.0.0",
+  "description": "A lightweight temporal-awareness organ with ambient time, active clock checks, and a Temporal Cortex.",
   "author": {
     "name": "Time Anchor contributors"
   },
@@ -10,15 +10,17 @@
   "interface": {
     "displayName": "Time Anchor",
     "shortDescription": "Bring lived time into conversational continuity.",
-    "longDescription": "Adds a conditional active clock check and an optional user hook. The hook keeps timestamps separate by conversation and supplies ambient time on an independent one-in-four draw.",
+    "longDescription": "Combines a per-conversation ambient time hook, an active clock reader, and a thin Temporal Cortex that turns verified temporal facts into an immediate update of the agent's understanding. Ordinary turns keep the independent one-in-four ambient draw, while local date crossings and gaps over two hours surface deterministically.",
     "developerName": "Time Anchor contributors",
     "category": "Productivity",
     "capabilities": [
-      "Local time context",
-      "Conditional clock checks"
+      "Per-conversation temporal state",
+      "Ambient time awareness",
+      "Active clock checks",
+      "Temporal Cortex interpretation cue"
     ],
     "defaultPrompt": [
-      "Use $time-anchor:time-anchor when elapsed time may change what this message means."
+      "Use $time-anchor:time-anchor when real elapsed time may change what this message means, and let verified temporal facts update your understanding before you respond."
     ]
   }
 }
