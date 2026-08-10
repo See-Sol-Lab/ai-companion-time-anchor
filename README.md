@@ -1,8 +1,8 @@
 # AI 伴侣时间锚｜Time Anchor v2.0（电脑端）
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21815644.svg)](https://doi.org/10.5281/zenodo.21815644)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21815643.svg)](https://doi.org/10.5281/zenodo.21815643)
 
-**当前版本：v2.0 — Temporal Cortex / 时间皮层** · [Release notes](RELEASE_NOTES_v2.0.0.md)
+**当前版本：v2.0 — Temporal Cortex / 时间皮层** · [Release notes](RELEASE_NOTES_v2.0.0.md) · [v2.0.0 DOI](https://doi.org/10.5281/zenodo.21875047)
 
 【手机端请绕路给你们磕一个球球了这个是电脑端的谢谢谢谢】
 
@@ -77,7 +77,6 @@ Reader 先给出客观时间事实与 `crossed_local_date`，随后紧贴一条�
 意思很简单：**既然已经看了表，就让看到的现实更新理解。**
 
 时间皮层不会替 AI 判断“这意味着什么”，也不会根据时长编造用户经历。它只负责把已经验证的时间事实送到下一步判断门口。最后是说“才五点多”、说“原来只过了十分钟”，还是只让语气、节奏、问题或建议发生变化，仍然由当前 AI 根据上下文决定。
-
 因此 v2.0 的链路变成了：
 
 **环境感知 → 主动看表 → 时间事实 → 时间皮层 → 更新理解 → 自然回应。**
@@ -157,7 +156,6 @@ python install_hook.py
 
 1. 将一份 Hook 脚本复制到 `~/.codex/time-anchor/`；
 2. 在 `~/.codex/hooks.json` 中添加唯一一条 Time Anchor `UserPromptSubmit` Hook。
-
 它没有后台进程、定时器、轮询服务或第二套运行时。Codex 只会在用户发送消息时启动 Hook 一次。
 
 安装或更新后：
