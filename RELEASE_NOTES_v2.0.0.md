@@ -2,6 +2,11 @@
 
 Time Anchor v2.0 extends the original two-path time anchor into a lightweight temporal pipeline: ambient awareness, deliberate clock checks, and a thin **Temporal Cortex** between verified time facts and the agent's next judgment.
 
+## DOI
+
+- **All versions / Concept DOI:** `10.5281/zenodo.21815643` — resolves to the latest published version.
+- **v2.0.0 version DOI:** `10.5281/zenodo.21875047`.
+
 ## Highlights
 
 - **Temporal Cortex:** successful active clock checks now end with an immediate cognitive-update cue, encouraging the agent to let verified temporal facts update its understanding before it responds.
