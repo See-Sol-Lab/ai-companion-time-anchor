@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import secrets
 import sys
 import tempfile
@@ -12,6 +13,16 @@ from pathlib import Path
 
 STATE_DIR = Path.home() / "Documents" / "Codex" / ".time-anchor" / "conversations"
 LONG_GAP_SECONDS = 2 * 60 * 60
+TIME_EXPRESSION = re.compile(
+    r"(?:"
+    r"\d{1,2}:\d{2}|"
+    r"[零〇一二两三四五六七八九十百\d]+点(?:半|[零〇一二两三四五六七八九十\d]+分)?|"
+    r"[零〇一二两三四五六七八九十百\d]+(?:秒钟?|分钟|小时|天|周|星期|个月|年)|"
+    r"[零〇一二两三四五六七八九十百\d]+月[零〇一二两三四五六七八九十百\d]+(?:日|号)|"
+    r"今天|昨天|明天|前天|后天|现在|刚才|刚刚|一会儿|等会儿|"
+    r"凌晨|早上|上午|中午|下午|傍晚|晚上|夜里|半夜"
+    r")"
+)
 
 
 def local_now() -> datetime:
@@ -95,14 +106,23 @@ def ambient_context(payload: dict[str, object]) -> str:
     )
 
 
+def time_attention_context() -> str:
+    return (
+        "[Time Anchor attention cue] The user's message contains explicit time information. "
+        "Decide whether to actively call the Time Anchor reader."
+    )
+
+
 def main() -> None:
-    event = json.load(sys.stdin)
+    event = json.loads(sys.stdin.buffer.read().decode("utf-8"))
     if event.get("hook_event_name") != "UserPromptSubmit":
         raise ValueError("time-anchor hook requires UserPromptSubmit input")
     session_id = event.get("session_id")
     if not isinstance(session_id, str) or not session_id:
         raise ValueError("time-anchor hook requires a session_id")
-
+    prompt = event.get("prompt")
+    if not isinstance(prompt, str):
+        raise ValueError("time-anchor hook requires a prompt")
     now = local_now()
     path = state_path(session_id)
     previous = load_previous(path)
@@ -120,16 +140,22 @@ def main() -> None:
     }
     write_state(path, payload)
 
+    explicit_time = TIME_EXPRESSION.search(prompt) is not None
     significant_transition = bool(crossed_local_date) or (
         elapsed_seconds is not None and elapsed_seconds >= LONG_GAP_SECONDS
     )
+    if explicit_time:
+        additional_context = time_attention_context()
+    else:
+        additional_context = ambient_context(payload)
     if not significant_transition and secrets.randbelow(4) != 0:
-        return
+        if not explicit_time:
+            return
 
     output = {
         "hookSpecificOutput": {
             "hookEventName": "UserPromptSubmit",
-            "additionalContext": ambient_context(payload),
+            "additionalContext": additional_context,
         }
     }
     json.dump(output, sys.stdout, ensure_ascii=True, separators=(",", ":"))

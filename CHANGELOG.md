@@ -2,6 +2,21 @@
 
 All notable public releases of AI Companion Time Anchor are documented here.
 
+## [2.0.1] - 2026-08-13
+
+### Fixed
+
+- Decode `UserPromptSubmit` input explicitly as UTF-8 on Windows, so Chinese time expressions are not corrupted by the system default code page.
+- Use Codex's bundled Python for the Windows active-reader command, avoiding the unreliable WindowsApps `python` alias.
+
+### Added
+
+- A lightweight explicit-time detector. When the current message contains a clock time, date, duration, or common Chinese temporal expression, the hook emits a clock-free attention cue and leaves the decision to call the active reader to the AI.
+
+### Privacy
+
+The hook checks the current prompt transiently in memory for time expressions. It still stores only timestamp/session-derived state; prompt text is not written to disk.
+
 ## [2.0.0] - 2026-08-10
 
 ### Added

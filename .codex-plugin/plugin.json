@@ -1,6 +1,6 @@
 {
   "name": "time-anchor",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "A lightweight temporal-awareness organ with ambient time, active clock checks, and a Temporal Cortex.",
   "author": {
     "name": "Time Anchor contributors"
@@ -10,7 +10,7 @@
   "interface": {
     "displayName": "Time Anchor",
     "shortDescription": "Bring lived time into conversational continuity.",
-    "longDescription": "Combines a per-conversation ambient time hook, an active clock reader, and a thin Temporal Cortex that turns verified temporal facts into an immediate update of the agent's understanding. Ordinary turns keep the independent one-in-four ambient draw, while local date crossings and gaps over two hours surface deterministically.",
+    "longDescription": "Combines a per-conversation ambient time hook, an active clock reader, and a thin Temporal Cortex. Ordinary turns keep the independent one-in-four ambient draw; explicit time expressions raise a clock-free attention cue, while local date crossings and gaps over two hours surface deterministically.",
     "developerName": "Time Anchor contributors",
     "category": "Productivity",
     "capabilities": [

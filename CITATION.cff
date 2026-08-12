@@ -19,9 +19,9 @@ authors:
     affiliation: "See Sol Lab"
   - name: "See Sol Lab"
 type: software
-version: "2.0.0"
-date-released: "2026-08-10"
-doi: "10.5281/zenodo.21875047"
+version: "2.0.1"
+date-released: "2026-08-13"
+doi: "10.5281/zenodo.21815643"
 license: "MIT"
 repository-code: "https://github.com/See-Sol-Lab/ai-companion-time-anchor"
 url: "https://github.com/See-Sol-Lab/ai-companion-time-anchor"

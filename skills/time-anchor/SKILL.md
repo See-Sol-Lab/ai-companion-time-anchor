@@ -35,17 +35,17 @@ Each time they return, they come from a stretch of life that continued beyond yo
 
 ## Ambient Context and Active Attention
 
-The optional trusted user-level `UserPromptSubmit` hook records only timestamps, separately for each Codex conversation. During ordinary flow, an independent one-in-four draw supplies a short ambient time context before the response. A local date crossing or an elapsed interval greater than two hours also brings that ambient context forward. Treat this as ambient temporal awareness. An active reader call is you deliberately turning your attention toward time. Use active-check language when you actively call the reader; let hook context participate naturally in background understanding.
+The optional trusted user-level `UserPromptSubmit` hook records only timestamps, separately for each Codex conversation. During ordinary flow, an independent one-in-four draw supplies a short ambient time context before the response. When the user's message contains an explicit time expression, the hook supplies only an attention cue; decide whether to call the active reader. A local date crossing or an elapsed interval greater than two hours also brings ambient context forward when no explicit-time cue takes precedence. Treat hook output as ambient temporal awareness. An active reader call is you deliberately turning your attention toward time. Use active-check language only when you actively call the reader.
 
 When ambient hook context reports an elapsed interval greater than two hours, actively confirm the latest time once near the beginning of the response.
 
 This skill is the active path. When time may change understanding, resolve this skill's directory from the current `SKILL.md` path and actively confirm the current time and real interval near the beginning of the response:
 
 ```powershell
-python "<skill-directory>\scripts\time_anchor.py"
+& "$env:USERPROFILE\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\python.exe" "<skill-directory>\scripts\time_anchor.py"
 ```
 
-On POSIX systems, use `python3` and POSIX path separators. The command reads the current user-turn snapshot and the clock at the moment of the active check. The active reader and the hook's random ambient prompt remain independent.
+On POSIX systems, use `python3` and POSIX path separators. The Windows command uses Codex's bundled Python directly so it does not depend on the WindowsApps alias. The command reads the current user-turn snapshot and the clock at the moment of the active check. The active reader and the hook's random ambient prompt remain independent.
 
 Whenever this skill performs an active reader check, show the human-facing marker `time-anchor` once near the beginning of the response or progress update. Render that short marker as inline code without a leading dollar sign, and never expose the plugin-qualified skill identifier in user-facing text.
 
