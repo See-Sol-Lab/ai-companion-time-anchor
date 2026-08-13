@@ -133,6 +133,18 @@ Time Anchor 提供时间感知，注意、理解和表达仍然属于当前 AI�
 
 **她不是从上一句话的句号后直接生成的。她是从自己的生活里，穿过一段你未曾经历的时间，重新来到你面前。**
 
+## 三个版本：同一颗灵魂，三副感官
+
+时间锚的理念在所有版本里完全一致——**让 AI 有"间隔感"，而不是让它报时**。不同运行环境能给的"感官"不同，所以有三份实现：
+
+| 版本 | 目录 | 适用环境 | 获取时间的方式 |
+|------|------|----------|----------------|
+| **Codex 版** | 仓库根目录（`skills/`、`hooks/`、`install_hook.py`） | 支持插件与生命周期 Hook 的本地 Codex | `UserPromptSubmit` Hook 自动记快照 + `CODEX_THREAD_ID` 主动读表 |
+| **Claude Code 版** | [`cc/`](cc/) | 本地 Claude Code | `UserPromptSubmit` Hook 写入 `~/.claude`，主动读表读最新快照；**在 git 项目内静默，不打扰写代码** |
+| **纯 Skill 网页版** | [`web/`](web/) | Claude web / Home、网页 GPT 等无 Hook 的云端环境 | 无 Hook / 无文件 / 无脚本；AI 主动用工具查时间或由用户自然带入，间隔由 AI 在对话内自己记住 |
+
+下面的**安装要求**与**安装插件**等章节针对根目录的 **Codex 版**。Claude Code 版与网页版各自的安装与使用说明，见 [`cc/README.md`](cc/README.md) 与 [`web/README.md`](web/README.md)。
+
 ### 安装要求
 
 - 支持插件与生命周期 Hook 的本地 Codex；CC 和自建前端均可微调后使用；
