@@ -9,7 +9,7 @@
 
 ## 为什么需要这一版
 
-带本地 Hook 的版本(见 `../claude-code/` 和 `../codex/`)靠 `UserPromptSubmit` hook 在
+带本地 Hook 的版本(见 `../claude-code/` 和仓库根目录的 [Codex 版](../README.md))靠 `UserPromptSubmit` hook 在
 每轮自动记录时间戳。但网页 / 云端 chat 跑在沙箱里,读不到本地 hook,也不能写文件、跑 shell。
 所以那套自动机制在 Home 网页端、云端 GPT 上都用不了。
 
@@ -24,7 +24,7 @@
 
 ## 与带 Hook 版本的区别
 
-| 部分 | 带 Hook 版(`claude-code/`、`codex/`) | 纯 Skill 版(本目录) |
+| 部分 | 带 Hook 版(`claude-code/`、根目录 Codex) | 纯 Skill 版(本目录) |
 |------|--------------------------|---------------------|
 | 时间来源 | hook 每轮自动写快照 | AI 主动用工具查 + 用户自然带入 |
 | 间隔计算 | hook / reader 脚本算好 | AI 自己在对话里记住并心算 |
