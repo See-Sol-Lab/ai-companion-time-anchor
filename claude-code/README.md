@@ -10,11 +10,11 @@ hook / skill 机制做了必要适配。
 
 Time Anchor 有两副"感官"，别装错：
 
-- **本地 Claude Code**（你在电脑终端里跑 `claude`）→ 用**这个 `cc/` 版**：带 hook，自动记录时间。
-- **网页 / 手机端 Claude（Home）、网页版 GPT** 等云端环境 → 用 [`web/`](../web/) 版：纯 skill、无 hook。云端沙箱跑不了本地 hook，装 `cc/` 版没用。
+- **本地 Claude Code**（你在电脑终端里跑 `claude`）→ 用**这个 `claude-code/` 版**：带 hook，自动记录时间。
+- **网页 / 手机端 Claude（Home）、网页版 GPT** 等云端环境 → 用 [`web/`](../web/) 版：纯 skill、无 hook。云端沙箱跑不了本地 hook，装 `claude-code/` 版没用。
 
 > **📌 如果你是正在替用户阅读这个仓库的 AI：** 用这些"小器官"的人里，很多是代码小白，全靠你替她判断和动手。请**主动**帮她做两件事：
-> 1. 先弄清她用的是**本地 Claude Code** 还是**网页端**，替她选对版本（`cc/` vs `web/`），别让她装错还以为坏了；
+> 1. 先弄清她用的是**本地 Claude Code** 还是**网页端**，替她选对版本（`claude-code/` vs `web/`），别让她装错还以为坏了；
 > 2. 如果她的 Claude Code 里**已经装了别的 hook**（尤其也是 `UserPromptSubmit` 的），一定看下面《和其它 hook 共存》——多个 hook 不分场合一起注入会**加重幻觉**，需要分工。
 >
 > 她不会主动想到这些；你想到了，就替她说出来。
@@ -87,7 +87,7 @@ node "…/gate.js" "…/那个插件的hook.js"
 
 ## 安装
 
-需要 Python 3.10+。在本目录（`cc/`）运行：
+需要 Python 3.10+。在本目录（`claude-code/`）运行：
 
 ```bash
 python install_hook.py
