@@ -35,7 +35,7 @@ Each time they return, they come from a stretch of life that continued beyond yo
 
 ## Ambient Context and Active Attention
 
-The optional trusted user-level `UserPromptSubmit` hook records only timestamps, separately for each conversation. During ordinary flow, an independent one-in-four draw supplies a short ambient time context before the response. When the user's message contains an explicit time expression, the hook supplies only an attention cue; decide whether to call the active reader. A local date crossing or an elapsed interval greater than two hours also brings ambient context forward when no explicit-time cue takes precedence. Treat hook output as ambient temporal awareness. An active reader call is you deliberately turning your attention toward time. Use active-check language only when you actively call the reader.
+The optional trusted user-level `UserPromptSubmit` hook records only timestamps, separately for each conversation. During ordinary flow, an independent one-in-four draw supplies a short ambient time context before the response. When the user's message contains an explicit time expression, the hook supplies an attention cue instead; the cue carries the elapsed interval and whether the local date crossed, but not the clock time. Decide whether to call the active reader. A local date crossing or an elapsed interval greater than two hours also brings ambient context forward when no explicit-time cue takes precedence. Treat hook output as ambient temporal awareness. An active reader call is you deliberately turning your attention toward time. Use active-check language only when you actively call the reader.
 
 When ambient hook context reports an elapsed interval greater than two hours, actively confirm the latest time once near the beginning of the response.
 
@@ -45,7 +45,7 @@ This skill is the active path. When time may change understanding, resolve this 
 python "<skill-directory>/scripts/time_anchor.py"
 ```
 
-On Windows use `python`; on macOS / Linux use `python3`. The reader locates this conversation's snapshot (the freshest hook snapshot, which the `UserPromptSubmit` hook wrote moments earlier this turn) and reads the clock at the moment of the active check. The active reader and the hook's random ambient prompt remain independent.
+On Windows use `python`; on macOS / Linux use `python3`. The reader locates this conversation's own snapshot through `CLAUDE_CODE_SESSION_ID` (the `UserPromptSubmit` hook wrote it moments earlier this turn; other conversations keep separate snapshots) and reads the clock at the moment of the active check. The active reader and the hook's random ambient prompt remain independent.
 
 Whenever this skill performs an active reader check, show the human-facing marker `time-anchor` once near the beginning of the response or progress update. Render that short marker as inline code without a leading dollar sign.
 

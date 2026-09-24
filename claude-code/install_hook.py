@@ -1,7 +1,7 @@
 """Install the Time Anchor UserPromptSubmit hook and skill into Claude Code.
 
 This is the Claude Code port of the Codex installer. It targets the user-level
-Claude configuration (~/.claude) so the time organ is available in ordinary
+Claude configuration (~/.claude, or CLAUDE_CONFIG_DIR when set) so the time organ is available in ordinary
 chat, and stays silent inside coding projects (see the hook's in_code_context).
 
     python install_hook.py              # install / update
@@ -19,7 +19,8 @@ import tempfile
 from pathlib import Path
 
 
-CLAUDE_DIR = Path.home() / ".claude"
+# Claude Code reads its user config from CLAUDE_CONFIG_DIR when set.
+CLAUDE_DIR = Path(os.environ.get("CLAUDE_CONFIG_DIR") or Path.home() / ".claude").expanduser()
 SETTINGS_FILE = CLAUDE_DIR / "settings.json"
 RUNTIME_DIR = CLAUDE_DIR / "time-anchor"
 RUNTIME_SCRIPT = RUNTIME_DIR / "user_prompt_submit.py"
@@ -30,8 +31,9 @@ SOURCE_SCRIPT = SOURCE_DIR / "hooks" / "user_prompt_submit.py"
 SOURCE_SKILL = SOURCE_DIR / "skills" / "time-anchor"
 
 EVENT = "UserPromptSubmit"
-# Stable substring used to recognise our own hook entry across installs.
-MARKER = "/.claude/time-anchor/user_prompt_submit.py"
+# Stable substring used to recognise our own hook entry across installs,
+# whichever config directory it was installed into.
+MARKER = "/time-anchor/user_prompt_submit.py"
 
 
 def atomic_write(path: Path, data: bytes) -> None:

@@ -26,7 +26,7 @@ Time Anchor 有两副"感官"，别装错：
 | Hook 注册位置 | `~/.codex/hooks.json` | `~/.claude/settings.json`（`UserPromptSubmit`） |
 | 状态目录 | `~/Documents/Codex/.time-anchor/` | `~/Documents/Claude/.time-anchor/` |
 | Skill 形式 | `.codex-plugin` 插件 | `~/.claude/skills/time-anchor/`（原生 skill） |
-| 主动读表定位会话 | 依赖 `CODEX_THREAD_ID` 环境变量 | 读取**最新一份 hook 快照**（本轮 hook 刚写入），无需环境变量；若存在 `CLAUDE_SESSION_ID` 则优先精确匹配 |
+| 主动读表定位会话 | 依赖 `CODEX_THREAD_ID` 环境变量 | 依赖 CC 传给命令的 `CLAUDE_CODE_SESSION_ID`，**每个对话只读自己的快照**，多开窗口互不串 |
 | 写代码时 | 每个对话都计时 | **在 git 项目目录内静默**，只在聊天场景生效 |
 
 ## 「写代码时不打扰」
@@ -87,7 +87,8 @@ node "…/gate.js" "…/那个插件的hook.js"
 
 ## 安装
 
-需要 Python 3.10+。在本目录（`claude-code/`）运行：
+需要 Python 3.10+，以及会向命令传 `CLAUDE_CODE_SESSION_ID` 的较新版 Claude Code
+（主动读表靠它找到本对话自己的快照）。在本目录（`claude-code/`）运行：
 
 ```bash
 python install_hook.py
@@ -99,6 +100,8 @@ python install_hook.py
 2. 把 skill 复制到 `~/.claude/skills/time-anchor/`；
 3. 在 `~/.claude/settings.json` 的 `UserPromptSubmit` 下登记唯一一条 Time Anchor hook
    （会保留文件中其它已有配置）。
+
+如果设置了 `CLAUDE_CONFIG_DIR`，安装器会装进那个目录，本文的 `~/.claude` 都指它。
 
 装完后**重启 Claude Code**，让新的 hook 生效。CC 首次运行该 hook 时会在
 `/hooks` 里请求信任，审查通过即可。
@@ -116,6 +119,8 @@ python install_hook.py
 `time-anchor` 标记。
 
 普通环境 hook 仍是独立的四分之一随机抽取；跨日或超过两小时的长间隔会必现。
+消息里带时间词时，hook 改发一条提示，附上距上一条消息的间隔和是否跨日（不含钟点），
+由模型判断要不要主动看表：连续聊天几分钟不必看，隔了几个小时回来就该看。
 第一轮只建立锚点，从第二轮起才有真实间隔。
 
 ## 卸载
@@ -132,6 +137,6 @@ python install_hook.py --uninstall
 
 ## 隐私
 
-与 Codex 版相同：只保存时间戳与由会话派生的哈希状态。消息正文、AI 回复、
-transcript、原始会话 ID、密钥账号等都不会读取或落盘。`temporal-cortex.jsonl`
+与 Codex 版相同：只保存时间戳与由会话派生的哈希状态。消息正文只在当轮内存里
+用来检测时间词；消息正文、AI 回复、transcript、原始会话 ID、密钥账号等都不会落盘。`temporal-cortex.jsonl`
 不会自动回填进模型上下文。

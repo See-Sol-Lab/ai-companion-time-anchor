@@ -114,10 +114,20 @@ def ambient_context(payload: dict[str, object]) -> str:
     )
 
 
-def time_attention_context() -> str:
+def time_attention_context(payload: dict[str, object]) -> str:
+    # The cue carries the interval (never the clock time) so the model can tell
+    # rapid back-and-forth from a real return without guessing.
+    if payload["previous_local"] is None:
+        interval = "No previous user-turn timestamp is available yet."
+    else:
+        crossed = "crossed" if payload["crossed_local_date"] else "did not cross"
+        interval = (
+            "Elapsed since the previous user turn in this conversation: "
+            f"{payload['elapsed_human']}; the local date {crossed}."
+        )
     return (
         "[Time Anchor attention cue] The user's message contains explicit time information. "
-        "Decide whether to actively call the Time Anchor reader."
+        f"{interval} Decide whether to actively call the Time Anchor reader."
     )
 
 
@@ -181,7 +191,7 @@ def main() -> None:
         elapsed_seconds is not None and elapsed_seconds >= LONG_GAP_SECONDS
     )
     if explicit_time:
-        additional_context = time_attention_context()
+        additional_context = time_attention_context(payload)
     else:
         additional_context = ambient_context(payload)
     if not significant_transition and secrets.randbelow(4) != 0:

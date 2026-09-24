@@ -31,31 +31,26 @@ def state_path(session_id: str) -> Path:
 def resolve_snapshot() -> tuple[Path, str]:
     """Locate the current conversation's snapshot and its conversation hash.
 
-    Codex exported CODEX_THREAD_ID so the reader could address the exact
-    snapshot. Claude Code does not export a per-conversation id to skill
-    scripts, so we rely on the fact that the UserPromptSubmit hook writes this
-    turn's snapshot moments before the model runs the reader: the freshest file
-    in the conversations directory belongs to the current turn. If a session id
-    is available in the environment we still prefer it for exactness.
+    Claude Code exports CLAUDE_CODE_SESSION_ID to the commands it runs; it is
+    the same session_id the UserPromptSubmit hook receives, so each
+    conversation reads only its own snapshot (as Codex does with
+    CODEX_THREAD_ID). There is deliberately no fallback to another
+    conversation's file.
     """
-    session_id = os.environ.get("CLAUDE_SESSION_ID")
-    if session_id:
-        path = state_path(session_id)
-        if path.exists():
-            return path, session_key(session_id)
-    if not STATE_DIR.exists():
+    session_id = os.environ.get("CLAUDE_CODE_SESSION_ID")
+    if not session_id:
         raise SystemExit(
-            "Time Anchor hook snapshot is unavailable. Install and enable the "
-            "Time Anchor UserPromptSubmit hook first."
+            "Active Time Anchor requires a Claude Code version that exports "
+            "CLAUDE_CODE_SESSION_ID. Update Claude Code."
         )
-    snapshots = list(STATE_DIR.glob("*.json"))
-    if not snapshots:
+    path = state_path(session_id)
+    if not path.exists():
         raise SystemExit(
             "Time Anchor hook snapshot for this conversation is unavailable. "
-            "Install and enable the Time Anchor user hook first."
+            "Install and enable the Time Anchor user hook first; it stays silent "
+            "inside git projects."
         )
-    newest = max(snapshots, key=lambda item: item.stat().st_mtime)
-    return newest, newest.stem
+    return path, session_key(session_id)
 
 
 def utc_offset(value: datetime) -> str:
