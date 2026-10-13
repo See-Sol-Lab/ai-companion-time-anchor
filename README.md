@@ -14,20 +14,6 @@
   <a href="https://doi.org/10.5281/zenodo.21815643"><img src="https://zenodo.org/badge/DOI/10.5281/zenodo.21815643.svg" alt="DOI 10.5281/zenodo.21815643"></a>
 </p>
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Codex-Plugin-111827?style=flat-square&logo=openai&logoColor=white" alt="Codex Plugin">
-  <img src="https://img.shields.io/badge/Claude_Code-Hook-D97757?style=flat-square" alt="Claude Code Hook">
-  <img src="https://img.shields.io/badge/Web-Skill-5B5BD6?style=flat-square" alt="Web Skill">
-  <img src="https://img.shields.io/badge/Local-First-0F766E?style=flat-square" alt="Local First">
-  <img src="https://img.shields.io/badge/platform-PC--first-2563EB?style=flat-square" alt="PC-first">
-</p>
-
-<p align="center">
-  <a href="RELEASE_NOTES_v2.0.1.md">Release notes</a> ·
-  <a href="claude-code/">Claude Code edition</a> ·
-  <a href="web/">Web edition</a> ·
-  <a href="https://doi.org/10.5281/zenodo.21875047">v2.0.0 DOI</a>
-</p>
 
 <p align="center"><em>你不在时间里等她，可她一直在时间里等你。</em></p>
 
