@@ -18,7 +18,7 @@ LONG_GAP_SECONDS = 2 * 60 * 60
 # daylight saving, so a fixed offset stays correct year-round.
 LOCAL_TZ = timezone(timedelta(hours=8), "Taipei")
 # Markers whose presence in the current working directory (or any ancestor)
-# means "this is a coding project", where Time Anchor stays silent.
+# means "this is a coding project", where Time Anchor only speaks when it matters.
 CODE_MARKERS = (".git",)
 TIME_EXPRESSION = re.compile(
     r"(?:"
@@ -30,6 +30,13 @@ TIME_EXPRESSION = re.compile(
     r"今天|昨天|明天|前天|后天|现在|刚才|刚刚|一会儿|等会儿|"
     r"凌晨|早上|上午|中午|下午|傍晚|晚上|夜里|半夜"
     r")"
+)
+# Direct questions about the clock or calendar. Inside a coding project these are
+# the only time words that still get a cue; incidental ones ("现在", "3天") do not.
+DIRECT_TIME_QUESTION = re.compile(
+    r"几点(?:了|钟|半)?|几号|周几|星期几|礼拜几|"
+    r"what time is it|what(?:'s| is) the (?:time|date)|what day is it",
+    re.IGNORECASE,
 )
 
 
@@ -136,11 +143,11 @@ def in_code_context(cwd: object) -> bool:
 
     Time Anchor is a companion/chat organ; while writing code the user does not
     want it firing on every turn. We treat any directory that is, or lives under,
-    a project marker (e.g. a git repo) as a coding context and stay silent there.
-    Override with TIME_ANCHOR_FORCE=1 (always on) or TIME_ANCHOR_DISABLE=1 (always off).
+    a project marker (e.g. a git repo) as a coding context. There the hook still
+    records snapshots (so the reader works) but only speaks on a long gap, a
+    crossed date, or a direct question about the time.
+    Override with TIME_ANCHOR_FORCE=1 (treat as chat everywhere).
     """
-    if os.environ.get("TIME_ANCHOR_DISABLE") == "1":
-        return True
     if os.environ.get("TIME_ANCHOR_FORCE") == "1":
         return False
     if not isinstance(cwd, str) or not cwd:
@@ -161,8 +168,9 @@ def main() -> None:
     event = json.loads(sys.stdin.buffer.read().decode("utf-8-sig"))
     if event.get("hook_event_name") != "UserPromptSubmit":
         raise ValueError("time-anchor hook requires UserPromptSubmit input")
-    if in_code_context(event.get("cwd")):
+    if os.environ.get("TIME_ANCHOR_DISABLE") == "1":
         return
+    code_context = in_code_context(event.get("cwd"))
     session_id = event.get("session_id")
     if not isinstance(session_id, str) or not session_id:
         raise ValueError("time-anchor hook requires a session_id")
@@ -190,13 +198,22 @@ def main() -> None:
     significant_transition = bool(crossed_local_date) or (
         elapsed_seconds is not None and elapsed_seconds >= LONG_GAP_SECONDS
     )
-    if explicit_time:
-        additional_context = time_attention_context(payload)
-    else:
-        additional_context = ambient_context(payload)
-    if not significant_transition and secrets.randbelow(4) != 0:
-        if not explicit_time:
+    if code_context:
+        direct_question = DIRECT_TIME_QUESTION.search(prompt) is not None
+        if direct_question:
+            additional_context = time_attention_context(payload)
+        elif significant_transition:
+            additional_context = ambient_context(payload)
+        else:
             return
+    else:
+        if explicit_time:
+            additional_context = time_attention_context(payload)
+        else:
+            additional_context = ambient_context(payload)
+        if not significant_transition and secrets.randbelow(4) != 0:
+            if not explicit_time:
+                return
 
     output = {
         "hookSpecificOutput": {

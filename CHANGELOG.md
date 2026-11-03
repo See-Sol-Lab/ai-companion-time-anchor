@@ -2,6 +2,12 @@
 
 All notable public releases of AI Companion Time Anchor are documented here.
 
+## [Unreleased]
+
+### Changed
+
+- **Claude Code edition inside git projects**: the hook no longer goes fully silent. It keeps recording snapshots every turn, so the active reader works in project folders too, and it speaks only when it matters: ambient time after a gap of 2+ hours or a crossed local date, and the attention cue for direct questions about the time ("几点了", "今天几号", "what time is it"). Ordinary turns and incidental time words stay silent, and there is no random sampling while coding. `TIME_ANCHOR_DISABLE=1` still turns it off completely. Guarded by `tests/test_code_context.py`.
+
 ## [Desktop & Web editions] - 2026-08-13
 
 ### Added

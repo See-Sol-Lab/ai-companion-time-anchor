@@ -24,3 +24,6 @@ jobs:
 
       - name: Run hook input regression tests
         run: python tests/test_stdin_bom.py
+
+      - name: Run coding-project behaviour tests
+        run: python tests/test_code_context.py
