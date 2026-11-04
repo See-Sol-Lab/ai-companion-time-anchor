@@ -23,7 +23,7 @@ Time Anchor 有两副"感官"，别装错：
 
 | 部分 | Codex 版 | CC 版 |
 |------|----------|-------|
-| Hook 注册位置 | `~/.codex/hooks.json` | `~/.claude/settings.json`（`UserPromptSubmit`） |
+| Hook 注册位置 | `$CODEX_HOME/hooks.json`，默认 `~/.codex/hooks.json` | `$CLAUDE_CONFIG_DIR/settings.json`，默认 `~/.claude/settings.json`（`UserPromptSubmit`） |
 | 状态目录 | `~/Documents/Codex/.time-anchor/` | `~/Documents/Claude/.time-anchor/` |
 | Skill 形式 | `.codex-plugin` 插件 | `~/.claude/skills/time-anchor/`（原生 skill） |
 | 主动读表定位会话 | 依赖 `CODEX_THREAD_ID` 环境变量 | 依赖 CC 传给命令的 `CLAUDE_CODE_SESSION_ID`，**每个对话只读自己的快照**，多开窗口互不串 |
@@ -55,7 +55,7 @@ Claude Code 的 hook（`UserPromptSubmit`、`SessionStart` 等）会在**每一�
 
 所以原则很简单：**让每个 hook 只在它该出现的场景里出现，别在同一轮里一起说话。**
 
-Time Anchor 自己已经这么做了——它在 git 项目里只在要紧时开口，平时只在聊天时出声（见上）。如果你**还装了另一个偏"写代码"的 hook**（比如社区里同样用 `UserPromptSubmit` 的 `ponytail` 这类"极简编码纪律"插件），最好让它反过来：**只在写代码时出现、聊天时闭嘴**，和 Time Anchor 正好错开，永不同框。
+Time Anchor 自己已经这么做了——它在 git 项目里只在要紧时开口，平时只在聊天时出声（见上）。如果你**还装了另一个偏"写代码"的 hook**（比如社区里同样用 `UserPromptSubmit` 的 `ponytail` 这类"极简编码纪律"插件），可以让它**只在写代码时出现、聊天时闭嘴**。普通编码轮次由此错开；长间隔、跨日或直接问时间时，必要的时间上下文仍可能与编码提示同时出现，两者都应保持简短。
 
 做法是给那个插件套一个很小的"门卫"，用同一条判据（`cwd` 里有没有 `.git`）决定放不放行。**关键：别去改那个插件的源码**——它的 hook 自己要读 `stdin`（那轮的 JSON），你若在它源码里抢先读 `stdin` 判断，就会把它需要的输入吃掉。正确做法是在**外面**套一层：读一次 `stdin` → 判断场景 → 把**原样** `stdin` 转交给真正的 hook。
 
@@ -112,6 +112,8 @@ python install_hook.py
 
 装完后**重启 Claude Code**，让新的 hook 生效。CC 首次运行该 hook 时会在
 `/hooks` 里请求信任，审查通过即可。
+
+已有用户更新仓库后，也要在本目录重新运行安装器，才能替换已安装的 hook 和 skill 副本；只更新源文件不会自动升级运行时。升级时保留 `~/Documents/Claude/.time-anchor/`，原有时间记录会继续使用。
 
 ## 验证
 

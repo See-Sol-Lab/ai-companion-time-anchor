@@ -9,7 +9,10 @@ permissions:
 
 jobs:
   regression:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Check out repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -27,3 +30,6 @@ jobs:
 
       - name: Run coding-project behaviour tests
         run: python tests/test_code_context.py
+
+      - name: Run Codex installer regression tests
+        run: python tests/test_codex_installer.py

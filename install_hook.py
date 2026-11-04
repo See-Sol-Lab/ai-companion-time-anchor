@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shlex
 import subprocess
 import sys
@@ -10,7 +11,9 @@ import tempfile
 from pathlib import Path
 
 
-CODEX_DIR = Path.home() / ".codex"
+CODEX_DIR = Path(os.environ.get("CODEX_HOME") or Path.home() / ".codex").expanduser()
+if not CODEX_DIR.is_absolute():
+    raise ValueError("CODEX_HOME must be an absolute path")
 HOOKS_FILE = CODEX_DIR / "hooks.json"
 RUNTIME_DIR = CODEX_DIR / "time-anchor"
 RUNTIME_SCRIPT = RUNTIME_DIR / "user_prompt_submit.py"
@@ -49,10 +52,10 @@ def is_time_anchor(handler: object) -> bool:
     if not isinstance(handler, dict):
         return False
     commands = (handler.get("command"), handler.get("commandWindows"))
-    marker = "/.codex/time-anchor/user_prompt_submit.py"
+    marker = r"/time-anchor/user_prompt_submit\.py(?=$|[\s\"'])"
     return any(
         isinstance(command, str)
-        and marker in command.replace("\\", "/").lower()
+        and re.search(marker, command.replace("\\", "/"), re.IGNORECASE) is not None
         for command in commands
     )
 
@@ -91,9 +94,9 @@ def install() -> None:
     if not SOURCE_SCRIPT.is_file():
         raise FileNotFoundError(f"Missing Time Anchor hook source: {SOURCE_SCRIPT}")
 
-    atomic_write(RUNTIME_SCRIPT, SOURCE_SCRIPT.read_bytes())
     config = read_config()
     remove_time_anchor(config)
+    atomic_write(RUNTIME_SCRIPT, SOURCE_SCRIPT.read_bytes())
     handler = {
         "type": "command",
         "command": shlex.join([sys.executable, str(RUNTIME_SCRIPT)]),

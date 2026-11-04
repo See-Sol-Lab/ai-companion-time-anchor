@@ -2,7 +2,8 @@
 
 This is the Claude Code port of the Codex installer. It targets the user-level
 Claude configuration (~/.claude, or CLAUDE_CONFIG_DIR when set) so the time organ is available in ordinary
-chat, and stays silent inside coding projects (see the hook's in_code_context).
+chat, records snapshots inside coding projects, and surfaces only significant
+transitions or direct time questions there (see the hook's in_code_context).
 
     python install_hook.py              # install / update
     python install_hook.py --uninstall  # remove the hook (state is kept)
@@ -134,7 +135,8 @@ def install() -> None:
     print(f"Installed Time Anchor skill:        {skill_target}")
     print(f"Updated Claude user settings:       {SETTINGS_FILE}")
     print("Restart Claude Code so the new UserPromptSubmit hook is picked up.")
-    print("Time Anchor stays silent inside git projects; set TIME_ANCHOR_FORCE=1 to override.")
+    print("In git projects, snapshots are recorded; only long gaps, date crossings and direct time questions surface.")
+    print("Set TIME_ANCHOR_FORCE=1 for chat behaviour, or TIME_ANCHOR_DISABLE=1 to disable the hook.")
 
 
 def uninstall() -> None:

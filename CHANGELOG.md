@@ -4,6 +4,39 @@ All notable public releases of AI Companion Time Anchor are documented here.
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-11-04
+
+This release brings the accumulated desktop and web updates since the last
+published GitHub Release, v2.0.0, into one versioned release. The earlier v2.0.1
+notes described source changes but did not have a corresponding GitHub tag or Release.
+
+### Fixed
+
+- The Codex installer honors an absolute `CODEX_HOME` (including paths with spaces),
+  or uses `~/.codex` when it is unset. Updating or uninstalling recognizes Time Anchor's
+  own registration across relocated configuration directories and both command fields.
+- Repeated Codex installation keeps one Time Anchor handler, preserves other hooks
+  and settings, and leaves timestamp snapshots intact. Invalid hook configuration
+  is rejected before replacing the installed runtime.
+- Both desktop hooks accept UTF-8 input with or without a Windows BOM. Time-expression
+  recognition includes direct time questions and avoids known quantity, IP-port and
+  code-slice false positives.
+
+### Added
+
+- The Claude Code desktop edition and hook-free web skill are included in a tagged
+  GitHub release for the first time. The Codex edition remains installable from the root.
+- CI runs the existing hook and detector regressions plus isolated Codex installer
+  tests on Windows and Linux with Python 3.10.
+
+### Upgrade
+
+- Updating source files or the Codex plugin alone does not replace the separately
+  installed user hook. Rerun the installer for the edition you use, then restart
+  the client and review the hook if its definition changed. Keep existing timestamp state.
+- `additionalContextLimit: 256` remains unchanged; it is an approximate token
+  threshold for Codex hook context, not a 256-character cutoff.
+
 ### Changed
 
 - **Claude Code edition inside git projects**: the hook no longer goes fully silent. It keeps recording snapshots every turn, so the active reader works in project folders too, and it speaks only when it matters: ambient time after a gap of 2+ hours or a crossed local date, and the attention cue for direct questions about the time ("几点了", "今天几号", "what time is it"). Ordinary turns and incidental time words stay silent, and there is no random sampling while coding. `TIME_ANCHOR_DISABLE=1` still turns it off completely. Guarded by `tests/test_code_context.py`.

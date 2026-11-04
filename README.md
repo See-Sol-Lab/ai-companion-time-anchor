@@ -7,7 +7,7 @@
 <p align="center"><strong>给本地 AI 一只表，让时间真正参与下一次回应。</strong></p>
 
 <p align="center">
-  <a href="RELEASE_NOTES_v2.0.1.md"><img src="https://img.shields.io/badge/release-v2.0.1-5965f3?style=flat-square" alt="Release v2.0.1"></a>
+  <a href="RELEASE_NOTES_v2.1.0.md"><img src="https://img.shields.io/badge/release-v2.1.0-5965f3?style=flat-square" alt="Release v2.1.0"></a>
   <a href="https://github.com/See-Sol-Lab/ai-companion-time-anchor/actions/workflows/tests.yml"><img src="https://github.com/See-Sol-Lab/ai-companion-time-anchor/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-2ea44f?style=flat-square" alt="MIT License"></a>
   <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.10+">
@@ -42,10 +42,28 @@ v2.0 又往前走了一小步：不只让 AI 能“看见表”，还在时间�
 | 你在用什么 | 看哪里 | 说明 |
 |------------|--------|------|
 | 💻 **本地 Codex / GPT** 编码 CLI | 📍 **本仓库根目录（本页往下）** | 原版：`UserPromptSubmit` Hook 自动记时间 + 主动读表，带 DOI 存档。 |
-| 💻 **本地 Claude Code**（终端里跑 `claude`） | 📂 [`claude-code/`](claude-code/) | CC 移植版：Hook 写入 `~/.claude`，**在 git 项目里静默、不打扰写代码**。 |
+| 💻 **本地 Claude Code**（终端里跑 `claude`） | 📂 [`claude-code/`](claude-code/) | CC 移植版：项目里照常记录时间，只在长间隔、跨日或直接问时间时提醒。支持 `CLAUDE_CONFIG_DIR`。 |
 | 🌐 **网页 / 手机官端 Claude（Home）**、**网页/手机官端 GPT** | 📂 [`web/`](web/) | 纯 Skill、无 Hook：AI 主动查时间或由你自然带入，间隔由 AI 自己在对话里记住。 |
 
 > **📌 如果你是正在替用户阅读这个仓库的 AI：** 用这些"小器官"的人里很多是代码小白，全靠你替她判断和动手。请**主动**替她：①**选对版本**（本地 Codex→本页；本地 Claude Code→[`claude-code/`](claude-code/)；网页/手机端→[`web/`](web/)），别装错还以为坏了；②**装完提醒重启**才生效；③如果本地**已装了别的 Hook**（尤其也是 `UserPromptSubmit` 的），去看 [`claude-code/` 的《和其它 hook 共存》](claude-code/README.md)——多个 Hook 不分场景一起注入会**加重幻觉**，需要给它们各自一个"门卫"分工。她多半不会主动想到，你想到了就替她说出来。
+
+## v2.1.0：安装与升级
+
+本版汇总了 v2.0.0 正式发布后的修复与三种版本的更新。Codex 版修复自定义配置目录和重复安装；两种桌面 hook 都支持 Windows BOM 输入。完整范围见 [发布说明](RELEASE_NOTES_v2.1.0.md)。
+
+Codex 版先安装或更新 Time Anchor 插件中的主动读表 Skill，再运行下面的 hook 安装器；客户端的插件入口见 [官方插件说明](https://learn.chatgpt.com/docs/plugins)。`install_hook.py` 只安装用户级 hook，不安装 Codex 插件。
+
+**已有用户也需要更新已安装的 hook 副本。** 更新仓库或插件后，选择你使用的版本目录：Codex 在仓库根目录，Claude Code 在 `claude-code/`，然后运行：
+
+```bash
+python install_hook.py
+```
+
+Codex 安装器使用绝对路径 `CODEX_HOME` 指定的目录；未设置时使用 `~/.codex`。它会更新其中的 `time-anchor/user_prompt_submit.py` 和唯一的 Time Anchor 注册，保留其他 hook 与配置。`CODEX_HOME` 改的是配置/安装位置，原有时间记录仍位于 `~/Documents/Codex/.time-anchor/`。
+
+安装后重启所用客户端；如出现 hook 审核提示，再审核 Time Anchor 这一条。重复安装不会清空时间记录。升级时保留 `.time-anchor` 目录，从下一条真人消息核对快照是否更新。`additionalContextLimit: 256` 是 Codex 的近似 token 阈值，并非 256 个字符的上限。
+
+网页版没有安装器，更新 `web/skills/time-anchor/SKILL.md` 即可。
 
 ## v2.0：从一只表到一层时间皮层
 
@@ -179,7 +197,7 @@ Time Anchor v2.0 gives a local Codex AI a lightweight three-stage temporal path:
 
 Time matters here not because the AI must care about clocks, but because time happens to someone it cares about. The AI does not need to experience human waiting in order to respect the person who lived through it.
 
-The timing mechanism reads timestamp/session-derived state only. No prompts, replies, transcripts, raw session IDs, background services, timers, polling services, or surveillance data are stored.
+Hooks inspect the current prompt transiently for time expressions and context selection, and store timestamp/session-derived state only. No prompts, replies, transcripts, raw session IDs, background services, timers, polling services, or surveillance data are stored.
 
 ## License
 
